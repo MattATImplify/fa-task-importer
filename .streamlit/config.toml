@@ -1,0 +1,17 @@
+# Streamlit theme based on Figma design system
+# https://www.figma.com/make/nI65iKCEyzqO5dfqb3fXsL/FA-Job-Importer-Design-System
+
+[theme]
+primaryColor = "#030213"          # --primary from Figma
+backgroundColor = "#ffffff"        # --background from Figma
+secondaryBackgroundColor = "#f9f9fb"  # --sidebar from Figma (slightly lighter)
+textColor = "#030213"             # --foreground from Figma
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+enableCORS = true
+enableXsrfProtection = true

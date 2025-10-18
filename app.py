@@ -1,6 +1,7 @@
 """
 FacilityApps Bulk Job Importer - MVP
 Local-first Streamlit app for validating and importing one-off jobs/rosters
+Design: https://www.figma.com/make/nI65iKCEyzqO5dfqb3fXsL/FA-Job-Importer-Design-System
 """
 
 import streamlit as st
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
 import pytz
 from dotenv import load_dotenv
+from styles import apply_custom_theme, apply_login_screen_style
 
 # Load environment variables
 load_dotenv()
@@ -46,6 +48,10 @@ def check_password():
             st.session_state["password_correct"] = False
             st.session_state["auth_error"] = f"Auth error: {str(e)}"
 
+    # Apply custom theme
+    apply_custom_theme()
+    apply_login_screen_style()
+    
     # Return True if the user is authenticated.
     if st.session_state.get("password_correct", False):
         return True
@@ -1544,6 +1550,9 @@ def main():
     # Check authentication
     if not check_password():
         st.stop()
+    
+    # Apply custom theme for authenticated users
+    apply_custom_theme()
     
     st.title("📋 FacilityApps Bulk Job Importer")
     st.markdown("**Production Version** – Validate and import recurring jobs/rosters")
