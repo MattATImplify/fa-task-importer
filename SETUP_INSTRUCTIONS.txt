@@ -1,0 +1,24 @@
+QUICK SETUP GUIDE
+=================
+
+1. Create virtual environment:
+   python3 -m venv venv
+
+2. Activate it:
+   source venv/bin/activate
+
+3. Install dependencies:
+   pip install -r requirements.txt
+
+4. Create .env file:
+   echo "FA_DOMAIN=demouk.facilityapps.com" > .env
+   echo "FA_TOKEN=your_actual_token_here" >> .env
+   
+   (Edit .env and replace with your actual values)
+
+5. Run the app:
+   streamlit run app.py
+
+6. Open browser to http://localhost:8501
+
+Ready to import jobs! 🚀
