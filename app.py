@@ -19,29 +19,81 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Simple authentication
+# Authentication with username and password
 def check_password():
-    """Returns `True` if the user had the correct password."""
+    """Returns `True` if the user had valid credentials."""
     
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == st.secrets["auth"]["password"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store password
-        else:
+    def credentials_entered():
+        """Checks whether credentials entered by the user are correct."""
+        try:
+            if "auth" in st.secrets and "master_username" in st.secrets["auth"] and "master_password" in st.secrets["auth"]:
+                username = st.session_state.get("username", "")
+                password = st.session_state.get("password", "")
+                
+                if (username == st.secrets["auth"]["master_username"] and 
+                    password == st.secrets["auth"]["master_password"]):
+                    st.session_state["password_correct"] = True
+                    st.session_state["logged_in_user"] = username
+                    # Don't store credentials
+                    del st.session_state["username"]
+                    del st.session_state["password"]
+                else:
+                    st.session_state["password_correct"] = False
+            else:
+                st.session_state["password_correct"] = False
+                st.session_state["auth_error"] = "Authentication not configured in secrets.toml"
+        except Exception as e:
             st.session_state["password_correct"] = False
+            st.session_state["auth_error"] = f"Auth error: {str(e)}"
 
-    # Return True if the password is validated.
+    # Return True if the user is authenticated.
     if st.session_state.get("password_correct", False):
         return True
 
-    # Show input for password.
+    # Show login form
     st.markdown("## 🔐 Authentication Required")
-    st.text_input(
-        "Enter password", type="password", on_change=password_entered, key="password"
-    )
-    if "password_correct" in st.session_state:
-        st.error("😕 Password incorrect")
+    st.markdown("### FA Job Importer - Admin Login")
+    
+    # Check if secrets are available
+    if "auth_error" in st.session_state:
+        st.error(st.session_state["auth_error"])
+        return False
+    
+    try:
+        if "auth" not in st.secrets or "master_username" not in st.secrets["auth"] or "master_password" not in st.secrets["auth"]:
+            st.error("❌ Authentication not configured. Please add [auth] master_username and master_password to .streamlit/secrets.toml")
+            st.code("""
+[auth]
+master_username = "admin"
+master_password = "your_secure_password"
+            """)
+            return False
+    except Exception as e:
+        st.error(f"❌ Error reading secrets: {str(e)}")
+        return False
+    
+    # Login form
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.text_input(
+            "Username", 
+            key="username",
+            placeholder="Enter your username"
+        )
+        st.text_input(
+            "Password", 
+            type="password", 
+            key="password",
+            placeholder="Enter your password"
+        )
+        
+        if st.button("🔓 Login", use_container_width=True):
+            credentials_entered()
+            st.rerun()
+    
+    if st.session_state.get("password_correct") == False:
+        st.error("😕 Invalid username or password")
+    
     return False
 
 # Setup logging
@@ -1515,6 +1567,17 @@ def main():
     # ===== SIDEBAR =====
     with st.sidebar:
         st.header("⚙️ Configuration")
+        
+        # Show logged in user
+        if "logged_in_user" in st.session_state:
+            st.success(f"👤 Logged in as: **{st.session_state['logged_in_user']}**")
+            if st.button("🚪 Logout"):
+                # Clear all session state
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.rerun()
+        
+        st.divider()
         
         # Load from env or allow override
         default_domain = os.getenv("FA_DOMAIN", "")

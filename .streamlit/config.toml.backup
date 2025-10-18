@@ -1,8 +1,8 @@
 [server]
 baseUrlPath = "/"
-enableCORS = false
+enableCORS = true
 enableXsrfProtection = true
-headless = true
+headless = false
 
 [browser]
 gatherUsageStats = false

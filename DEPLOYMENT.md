@@ -11,12 +11,15 @@
 Edit `.streamlit/secrets.toml` with your production values:
 ```toml
 [auth]
-password = "your-secure-password-here"
+master_username = "admin"
+master_password = "your-secure-password-here"
 
 [production]
 FA_DOMAIN = "regularcleaning.facilityapps.com"
 FA_TOKEN = "your-production-api-token"
 ```
+
+**⚠️ Security Note:** Change the default username and password before deploying to production!
 
 ### 1.2 Test Locally
 ```bash

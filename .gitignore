@@ -5,6 +5,7 @@
 
 # Streamlit secrets (use Streamlit Cloud secrets instead)
 .streamlit/secrets.toml
+LOGIN_INFO.txt
 
 # Python
 __pycache__/
