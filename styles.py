@@ -53,17 +53,22 @@ def apply_custom_theme():
     
     /* Main container */
     .main {
-        background-color: var(--background) !important;
+        background-color: #fafafa !important;
     }
     
-    /* Sidebar styling */
+    /* Sidebar styling - Match Figma exactly */
     [data-testid="stSidebar"] {
-        background-color: var(--sidebar) !important;
-        border-right: 1px solid var(--sidebar-border) !important;
+        background-color: #ffffff !important;
+        border-right: 1px solid #e5e5e5 !important;
     }
     
     [data-testid="stSidebar"] > div:first-child {
-        background-color: var(--sidebar) !important;
+        background-color: #ffffff !important;
+    }
+    
+    /* Sidebar content padding */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        padding-top: 1rem !important;
     }
     
     /* Headers */

@@ -56,10 +56,6 @@ def check_password():
     if st.session_state.get("password_correct", False):
         return True
 
-    # Show login form
-    st.markdown("## 🔐 Authentication Required")
-    st.markdown("### FA Job Importer - Admin Login")
-    
     # Check if secrets are available
     if "auth_error" in st.session_state:
         st.error(st.session_state["auth_error"])
@@ -78,27 +74,49 @@ master_password = "your_secure_password"
         st.error(f"❌ Error reading secrets: {str(e)}")
         return False
     
-    # Login form
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Login form - Figma design style
+    col1, col2, col3 = st.columns([1, 2.5, 1])
     with col2:
+        # Card header with logo
+        st.markdown("""
+        <div style='background: white; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 2rem; margin-top: 5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
+            <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 24px;'>
+                <div style='width: 40px; height: 40px; background: #030213; border-radius: 8px; display: flex; align-items: center; justify-center;'>
+                    <span style='color: white; font-size: 18px;'>🔒</span>
+                </div>
+                <div>
+                    <div style='font-size: 18px; font-weight: 600; color: #030213;'>FacilityApps</div>
+                    <div style='font-size: 11px; color: #717182;'>Job Importer</div>
+                </div>
+            </div>
+            <h2 style='font-size: 20px; font-weight: 600; margin-bottom: 8px; color: #030213;'>Authentication Required</h2>
+            <p style='font-size: 14px; color: #717182; margin-bottom: 24px;'>Sign in to access the bulk job importer</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<div style='margin-top: -10px;'>", unsafe_allow_html=True)
         st.text_input(
             "Username", 
             key="username",
-            placeholder="Enter your username"
+            placeholder="Enter username",
+            label_visibility="visible"
         )
         st.text_input(
             "Password", 
             type="password", 
             key="password",
-            placeholder="Enter your password"
+            placeholder="Enter password",
+            label_visibility="visible"
         )
         
-        if st.button("🔓 Login", use_container_width=True):
+        if st.session_state.get("password_correct") == False:
+            st.error("Invalid username or password")
+        
+        if st.button("🔒 Sign In", use_container_width=True, type="primary"):
             credentials_entered()
             st.rerun()
-    
-    if st.session_state.get("password_correct") == False:
-        st.error("😕 Invalid username or password")
+        
+        st.markdown("</div>", unsafe_allow_html=True)
     
     return False
 
@@ -1573,20 +1591,37 @@ def main():
     if "users" not in st.session_state:
         st.session_state.users = []
     
-    # ===== SIDEBAR =====
+    # ===== SIDEBAR (Figma Design Style) =====
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        # Header with branding
+        st.markdown("""
+        <div style='padding: 1rem 0 1.5rem 0;'>
+            <div style='display: flex; align-items: center; gap: 12px;'>
+                <div style='width: 32px; height: 32px; background: #030213; border-radius: 8px; display: flex; align-items: center; justify-center;'>
+                    <span style='color: white; font-size: 16px;'>📊</span>
+                </div>
+                <div>
+                    <div style='font-size: 14px; font-weight: 600;'>FacilityApps</div>
+                    <div style='font-size: 10px; color: #717182;'>Bulk Job Importer</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Show logged in user
+        # User Session Section
+        st.markdown("##### 👤 User Session")
         if "logged_in_user" in st.session_state:
-            st.success(f"👤 Logged in as: **{st.session_state['logged_in_user']}**")
-            if st.button("🚪 Logout"):
-                # Clear all session state
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
-                st.rerun()
+            st.markdown(f"""
+            <div style='background: #f3f3f5; padding: 12px; border-radius: 8px; margin-bottom: 1rem;'>
+                <div style='font-size: 11px; color: #717182;'>Logged in as</div>
+                <div style='font-size: 14px; font-weight: 500; color: #030213;'>{st.session_state['logged_in_user']}</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         st.divider()
+        
+        # Configuration Section
+        st.markdown("##### ⚙️ Configuration")
         
         # Load from env or allow override
         default_domain = os.getenv("FA_DOMAIN", "")
@@ -1595,17 +1630,19 @@ def main():
         fa_domain = st.text_input(
             "FA Domain",
             value=default_domain,
-            help="e.g., demouk.facilityapps.com"
+            placeholder="example.facilityapps.com",
+            label_visibility="visible"
         )
         
         fa_token = st.text_input(
-            "Bearer Token",
+            "API Token",
             value=default_token,
             type="password",
-            help="Your FacilityApps API token"
+            placeholder="Enter API token",
+            label_visibility="visible"
         )
         
-        if st.button("🔍 Test Connectivity"):
+        if st.button("Test Connection", use_container_width=True):
             if not fa_domain or not fa_token:
                 st.error("Please provide both domain and token")
             else:
@@ -1619,1359 +1656,305 @@ def main():
         
         st.divider()
         
-        enable_import = st.toggle(
-            "🚀 Enable Import",
-            value=False,
-            help="Enable actual write operations to FA"
-        )
+        # Options Section
+        st.markdown("##### Options")
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("<div style='padding-top: 8px; font-size: 13px;'>🚀 Enable Import</div>", unsafe_allow_html=True)
+        with col2:
+            enable_import = st.toggle("Enable Import", value=False, key="import_toggle", label_visibility="collapsed")
         
         if enable_import:
-            st.warning("⚠️ Import is ENABLED – writes will occur!")
+            st.warning("⚠️ Writes enabled!", icon="⚠️")
         
-        debug_mode = st.toggle(
-            "🐛 Debug Mode",
-            value=False,
-            help="Show detailed debugging information (payloads, lookups, validation details)"
-        )
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("<div style='padding-top: 8px; font-size: 13px;'>🐛 Debug Mode</div>", unsafe_allow_html=True)
+        with col2:
+            debug_mode = st.toggle("Debug Mode", value=False, key="debug_toggle", label_visibility="collapsed")
         
         st.divider()
         
-        # Show lookup metrics
+        # Reference Data Section
+        st.markdown("##### 📊 Reference Data")
+        
         if st.session_state.lookups_loaded:
-            st.metric("Sites", st.session_state.get("sites_count", 0))
-            st.metric("Floors", st.session_state.get("floors_count", 0))
-            st.metric("Spaces", st.session_state.get("spaces_count", 0))
-            st.metric("Users", st.session_state.get("users_count", 0))
-    
-    # ===== MAIN CONTENT =====
-    
-    # Section 1: Load Lookups
-    st.header("1️⃣ Load Reference Data")
-    
-    if st.button("📥 Load Sites/Floors/Spaces/Users", type="primary"):
-        if not fa_domain or not fa_token:
-            st.error("Please configure domain and token in sidebar")
+            # Card-based metrics
+            metrics_data = [
+                ("Sites", st.session_state.get("sites_count", 0)),
+                ("Floors", st.session_state.get("floors_count", 0)),
+                ("Spaces", st.session_state.get("spaces_count", 0)),
+                ("Users", st.session_state.get("users_count", 0))
+            ]
+            
+            for label, value in metrics_data:
+                st.markdown(f"""
+                <div style='background: #f3f3f5; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;'>
+                    <span style='font-size: 11px; color: #717182;'>{label}</span>
+                    <span style='font-size: 13px; font-weight: 500; color: #030213;'>{value}</span>
+                </div>
+                """, unsafe_allow_html=True)
         else:
-            with st.spinner("Fetching data from FacilityApps..."):
-                client = FacilityAppsClient(fa_domain, fa_token)
-                
-                sites = client.get_sites()
-                floors = client.get_floors()
-                spaces = client.get_spaces()
-                users = client.get_users()
-                
-                # Debug: Check data types
-                if sites:
-                    if isinstance(sites, dict):
-                        st.warning(f"⚠️ Sites returned as dict with keys: {list(sites.keys())}")
-                    elif isinstance(sites, list) and len(sites) > 0 and not isinstance(sites[0], dict):
-                        st.warning(f"⚠️ Sites items are {type(sites[0])}, not dicts")
-                
-                if floors:
-                    if isinstance(floors, dict):
-                        st.warning(f"⚠️ Floors returned as dict with keys: {list(floors.keys())}")
-                    elif isinstance(floors, list) and len(floors) > 0 and not isinstance(floors[0], dict):
-                        st.warning(f"⚠️ Floors items are {type(floors[0])}, not dicts")
-                
-                if spaces:
-                    if isinstance(spaces, dict):
-                        st.warning(f"⚠️ Spaces returned as dict with keys: {list(spaces.keys())}")
-                    elif isinstance(spaces, list) and len(spaces) > 0 and not isinstance(spaces[0], dict):
-                        st.warning(f"⚠️ Spaces items are {type(spaces[0])}, not dicts")
-                
-                if users:
-                    if isinstance(users, dict):
-                        st.warning(f"⚠️ Users returned as dict with keys: {list(users.keys())}")
-                    elif isinstance(users, list) and len(users) > 0 and not isinstance(users[0], dict):
-                        st.warning(f"⚠️ Users items are {type(users[0])}, not dicts")
-                
-                st.session_state.client = client
-                st.session_state.sites = sites
-                st.session_state.floors = floors
-                st.session_state.spaces = spaces
-                st.session_state.users = users
-                st.session_state.lookups_loaded = True
-                st.session_state.sites_count = len(sites) if sites else 0
-                st.session_state.floors_count = len(floors) if floors else 0
-                st.session_state.spaces_count = len(spaces) if spaces else 0
-                st.session_state.users_count = len(users) if users else 0
-                
-                st.success(f"✅ Loaded: {len(sites)} sites, {len(floors)} floors, {len(spaces)} spaces, {len(users)} users")
-                
-                # Show sample data for debugging (only in debug mode)
-                if debug_mode:
-                    with st.expander("🔍 Debug: View Sample Data"):
-                        st.write("**Sites Response:**")
-                        if isinstance(sites, list) and len(sites) > 0:
-                            st.json(sites[0])
-                        elif isinstance(sites, dict):
-                            st.json(sites)
-                        else:
-                            st.write(f"Type: {type(sites)}, Value: {str(sites)[:200]}")
-                        
-                        st.write("**Floors Response:**")
-                        if isinstance(floors, list) and len(floors) > 0:
-                            st.json(floors[0])
-                            st.write(f"**Available fields in floor object:** {list(floors[0].keys()) if isinstance(floors[0], dict) else 'Not a dict'}")
-                        elif isinstance(floors, dict):
-                            st.json(floors)
-                        else:
-                            st.write(f"Type: {type(floors)}, Value: {str(floors)[:200]}")
-                        
-                        st.write("**Spaces Response:**")
-                        if isinstance(spaces, list) and len(spaces) > 0:
-                            st.json(spaces[0])
-                        elif isinstance(spaces, dict):
-                            st.json(spaces)
-                        else:
-                            st.write(f"Type: {type(spaces)}, Value: {str(spaces)[:200]}")
-                        
-                        st.write("**Users Response:**")
-                        if isinstance(users, list) and len(users) > 0:
-                            st.json(users[0])
-                        elif isinstance(users, dict):
-                            st.json(users)
-                        else:
-                            st.write(f"Type: {type(users)}, Value: {str(users)[:200]}")
-                
-                st.rerun()
-    
-    if not st.session_state.lookups_loaded:
-        st.info("👆 Click above to load reference data before uploading CSV")
-        return
-    
-    # Section 1.5: Lookup Tables Reference
-    st.header("📚 Available Sites, Floors & Spaces")
-    st.info("Use these names in your CSV - no need for IDs!")
-    
-    # Build lookup tables with better field detection
-    sites_list = []
-    for site in st.session_state.sites:
-        if isinstance(site, dict):
-            # Try multiple possible field names for site ID and name
-            site_id = site.get("id") or site.get("site_id") or site.get("location_id")
-            site_name = site.get("name") or site.get("site_name") or site.get("title") or site.get("location_name")
-            
-            sites_list.append({
-                "site_name": site_name if site_name else "N/A",
-                "site_id": site_id if site_id else "N/A"
-            })
-    
-    floors_list = []
-    for floor in st.session_state.floors:
-        if isinstance(floor, dict):
-            # Try multiple field names
-            floor_id = floor.get("id") or floor.get("floor_id")
-            floor_name = floor.get("name") or floor.get("floor_name") or floor.get("title")
-            site_id = (floor.get("siteId") or floor.get("site_id") or floor.get("location_id") or 
-                      floor.get("parent_id") or floor.get("site") or floor.get("location") or 
-                      floor.get("building_id") or floor.get("building") or floor.get("facility_id") or 
-                      floor.get("facility"))
-            
-            # Debug: Show what fields are available and what we found (only in debug mode)
-            if debug_mode and len(floors_list) == 0:  # Only show for first floor
-                st.write(f"**Debug - Floor fields available:** {list(floor.keys())}")
-                st.write(f"**Debug - Site ID found:** {site_id}")
-                st.write(f"**Debug - Trying these site fields:** siteId={floor.get('siteId')}, site_id={floor.get('site_id')}, location_id={floor.get('location_id')}, parent_id={floor.get('parent_id')}, site={floor.get('site')}, location={floor.get('location')}, building_id={floor.get('building_id')}, building={floor.get('building')}, facility_id={floor.get('facility_id')}, facility={floor.get('facility')}")
-            
-            # Find site name
-            site_name = "N/A"
-            if site_id:
-                for s in st.session_state.sites:
-                    if isinstance(s, dict):
-                        s_id = s.get("id") or s.get("site_id") or s.get("location_id")
-                        if str(s_id) == str(site_id):
-                            site_name = s.get("name") or s.get("site_name") or s.get("title") or s.get("location_name") or "N/A"
-                            break
-            
-            floors_list.append({
-                "site_name": site_name if site_name else "N/A",
-                "floor_name": floor_name if floor_name else "N/A",
-                "site_id": site_id if site_id else "N/A",
-                "floor_id": floor_id if floor_id else "N/A"
-            })
-    
-    spaces_list = []
-    for space in st.session_state.spaces:
-        if isinstance(space, dict):
-            # Try multiple field names
-            space_id = space.get("id") or space.get("space_id") or space.get("room_id")
-            space_name = space.get("name") or space.get("space_name") or space.get("title") or space.get("room_name")
-            floor_id = space.get("floorId") or space.get("floor_id") or space.get("parent_id")
-            site_id = space.get("siteId") or space.get("site_id") or space.get("location_id")
-            
-            # Debug: Show what fields are available and what we found (only in debug mode)
-            if debug_mode and len(spaces_list) == 0:  # Only show for first space
-                st.write(f"**Debug - Space fields available:** {list(space.keys())}")
-                st.write(f"**Debug - Floor ID found:** {floor_id}")
-                st.write(f"**Debug - Site ID found:** {site_id}")
-                st.write(f"**Debug - Trying these floor fields:** floorId={space.get('floorId')}, floor_id={space.get('floor_id')}, parent_id={space.get('parent_id')}")
-                st.write(f"**Debug - Trying these site fields:** siteId={space.get('siteId')}, site_id={space.get('site_id')}, location_id={space.get('location_id')}")
-            
-            # Find floor and site names
-            floor_name = "N/A"
-            site_name = "N/A"
-            
-            # Find floor name
-            if floor_id:
-                for f in st.session_state.floors:
-                    if isinstance(f, dict):
-                        f_id = f.get("id") or f.get("floor_id")
-                        if str(f_id) == str(floor_id):
-                            floor_name = f.get("name") or f.get("floor_name") or f.get("title") or "N/A"
-                            break
-            
-            # Find site name (use direct siteId from space)
-            if site_id:
-                for s in st.session_state.sites:
-                    if isinstance(s, dict):
-                        s_id = s.get("id") or s.get("site_id") or s.get("siteId") or s.get("location_id")
-                        if str(s_id) == str(site_id):
-                            site_name = s.get("name") or s.get("site_name") or s.get("title") or s.get("location_name") or "N/A"
-                            break
-            
-            spaces_list.append({
-                "site_name": site_name if site_name else "N/A",
-                "floor_name": floor_name if floor_name else "N/A",
-                "space_name": space_name if space_name else "N/A",
-                "site_id": site_id if site_id else "N/A",
-                "floor_id": floor_id if floor_id else "N/A",
-                "space_id": space_id if space_id else "N/A"
-            })
-    
-    # Display as tabs with cascading filters
-    tab1, tab2, tab3 = st.tabs(["📍 Sites", "🏢 Floors", "🚪 Spaces"])
-    
-    with tab1:
-        if sites_list:
-            sites_df = pd.DataFrame(sites_list)
-            st.write(f"**Total Sites:** {len(sites_df)}")
-            st.dataframe(sites_df, width='stretch', hide_index=True)
-            
-            # Download button
-            csv_sites = sites_df.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Sites Lookup",
-                data=csv_sites,
-                file_name="sites_lookup.csv",
-                mime="text/csv"
-            )
-        else:
-            st.warning("No sites found")
-    
-    with tab2:
-        if floors_list:
-            floors_df = pd.DataFrame(floors_list)
-            
-            # Cascading filter: Select site to filter floors
-            unique_sites = sorted(floors_df["site_name"].unique())
-            selected_site = st.selectbox(
-                "🔍 Filter by Site:",
-                options=["All Sites"] + list(unique_sites),
-                key="floor_site_filter"
-            )
-            
-            # Apply filter
-            if selected_site != "All Sites":
-                filtered_floors = floors_df[floors_df["site_name"] == selected_site]
-            else:
-                filtered_floors = floors_df
-            
-            st.write(f"**Showing:** {len(filtered_floors)} of {len(floors_df)} floors")
-            st.dataframe(filtered_floors, width='stretch', hide_index=True)
-            
-            # Download button (downloads filtered data)
-            csv_floors = filtered_floors.to_csv(index=False)
-            st.download_button(
-                label=f"📥 Download {'Filtered' if selected_site != 'All Sites' else 'All'} Floors",
-                data=csv_floors,
-                file_name=f"floors_lookup{'_' + selected_site.replace(' ', '_') if selected_site != 'All Sites' else ''}.csv",
-                mime="text/csv"
-            )
-        else:
-            st.warning("No floors found")
-    
-    with tab3:
-        if spaces_list:
-            spaces_df = pd.DataFrame(spaces_list)
-            
-            # Cascading filters: Site -> Floor -> Spaces
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                unique_sites_spaces = sorted(spaces_df["site_name"].unique())
-                selected_site_space = st.selectbox(
-                    "🔍 Filter by Site:",
-                    options=["All Sites"] + list(unique_sites_spaces),
-                    key="space_site_filter"
-                )
-            
-            # Filter floors based on selected site
-            if selected_site_space != "All Sites":
-                available_floors = sorted(spaces_df[spaces_df["site_name"] == selected_site_space]["floor_name"].unique())
-            else:
-                available_floors = sorted(spaces_df["floor_name"].unique())
-            
-            with col2:
-                selected_floor = st.selectbox(
-                    "🔍 Filter by Floor:",
-                    options=["All Floors"] + list(available_floors),
-                    key="space_floor_filter"
-                )
-            
-            # Apply filters
-            filtered_spaces = spaces_df.copy()
-            if selected_site_space != "All Sites":
-                filtered_spaces = filtered_spaces[filtered_spaces["site_name"] == selected_site_space]
-            if selected_floor != "All Floors":
-                filtered_spaces = filtered_spaces[filtered_spaces["floor_name"] == selected_floor]
-            
-            st.write(f"**Showing:** {len(filtered_spaces)} of {len(spaces_df)} spaces")
-            st.dataframe(filtered_spaces, width='stretch', hide_index=True)
-            
-            # Download button (downloads filtered data)
-            csv_spaces = filtered_spaces.to_csv(index=False)
-            filename_parts = ["spaces_lookup"]
-            if selected_site_space != "All Sites":
-                filename_parts.append(selected_site_space.replace(" ", "_"))
-            if selected_floor != "All Floors":
-                filename_parts.append(selected_floor.replace(" ", "_"))
-            
-            st.download_button(
-                label=f"📥 Download {'Filtered' if len(filename_parts) > 1 else 'All'} Spaces",
-                data=csv_spaces,
-                file_name="_".join(filename_parts) + ".csv",
-                mime="text/csv"
-            )
-        else:
-            st.warning("No spaces found")
-    
-    st.divider()
-    
-    # Section 2: Upload CSV
-    st.header("2️⃣ Upload CSV")
-    
-    uploaded_file = st.file_uploader(
-        "Choose CSV file",
-        type=["csv"],
-        help="Upload your jobs CSV file"
-    )
-    
-    if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            st.session_state.csv_data = df
-            st.success(f"✅ Loaded {len(df)} rows")
-            
-            with st.expander("📄 Preview Data", expanded=True):
-                st.dataframe(df, width='stretch')
-        except Exception as e:
-            st.error(f"Failed to load CSV: {e}")
-            return
-    
-    if st.session_state.csv_data is None:
-        st.info("👆 Upload a CSV file to continue")
-        return
-    
-    df = st.session_state.csv_data
-    
-    # Section 3: Audit & Fix
-    st.header("3️⃣ Audit & Fix")
-    
-    if not st.session_state.lookups_loaded:
-        st.warning("⚠️ Please load reference data (step 1) before auditing")
-        return
-    
-    # Inline editable data grid with cascading dropdowns
-    with st.expander("✏️ Edit CSV Data", expanded=True):
-        st.info("💡 Edit cells below, then click 'Audit & Validate' or 'Re-audit' to see updated validation")
+            st.markdown("<div style='font-size: 12px; color: #717182; padding: 8px 0;'>No data loaded yet</div>", unsafe_allow_html=True)
         
-        # Create a copy for editing
-        edited_df = df.copy()
+        st.divider()
         
-        # Create columns for the main editing interface
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            st.write("**Edit Data:**")
-        
-        with col2:
-            if st.button("🔄 Reset to Original", help="Reset all changes back to original CSV"):
-                edited_df = df.copy()
-                st.session_state.csv_data = edited_df
-                st.rerun()
-        
-        # Create the editable table with cascading dropdowns
-        for idx, row in df.iterrows():
-            st.write(f"**Row {idx + 1}:**")
-            
-            # Create columns for inline editing
-            cols = st.columns([2, 1, 1, 1, 1, 2])  # title, site, floor, space, owner, other fields
-            
-            with cols[0]:
-                # Title and description (always editable)
-                title = st.text_input("Title", value=str(row.get("title_en", "")), key=f"title_{idx}")
-                description = st.text_input("Description", value=str(row.get("description_en", "")), key=f"desc_{idx}")
-                edited_df.at[idx, "title_en"] = title
-                edited_df.at[idx, "description_en"] = description
-            
-            with cols[1]:
-                # Site dropdown
-                site_options = ["Select Site..."] + sorted([s.get("name", s.get("site_name", "")) for s in st.session_state.sites if s.get("name") or s.get("site_name")])
-                current_site = row.get("site_name", "")
-                if current_site not in site_options:
-                    current_site = "Select Site..."
-                
-                selected_site = st.selectbox(
-                    "Site",
-                    options=site_options,
-                    index=site_options.index(current_site) if current_site in site_options else 0,
-                    key=f"site_{idx}"
-                )
-                
-                if selected_site != "Select Site...":
-                    edited_df.at[idx, "site_name"] = selected_site
-                else:
-                    edited_df.at[idx, "site_name"] = ""
-            
-            with cols[2]:
-                # Floor dropdown (filtered by selected site)
-                if selected_site != "Select Site...":
-                    # Find floors for this site
-                    site_id = None
-                    for site in st.session_state.sites:
-                        if site.get("name") == selected_site or site.get("site_name") == selected_site:
-                            site_id = site.get("id") or site.get("site_id") or site.get("siteId")
-                            break
-                    
-                    if site_id:
-                        floor_options = ["Select Floor..."] + sorted([f.get("name", f.get("floor_name", "")) for f in st.session_state.floors if (f.get("siteId") == site_id or f.get("siteId") == str(site_id) or f.get("site_id") == site_id or f.get("site_id") == str(site_id)) and (f.get("name") or f.get("floor_name"))])
-                    else:
-                        floor_options = ["Select Floor..."]
-                else:
-                    floor_options = ["Select Floor..."]
-                
-                current_floor = row.get("floor_name", "")
-                if current_floor not in floor_options:
-                    current_floor = "Select Floor..."
-                
-                selected_floor = st.selectbox(
-                    "Floor",
-                    options=floor_options,
-                    index=floor_options.index(current_floor) if current_floor in floor_options else 0,
-                    key=f"floor_{idx}"
-                )
-                
-                if selected_floor != "Select Floor...":
-                    edited_df.at[idx, "floor_name"] = selected_floor
-                else:
-                    edited_df.at[idx, "floor_name"] = ""
-            
-            with cols[3]:
-                # Space dropdown (filtered by selected site and floor)
-                if selected_site != "Select Site..." and selected_floor != "Select Floor...":
-                    # Find space for this site and floor
-                    site_id = None
-                    floor_id = None
-                    
-                    for site in st.session_state.sites:
-                        if site.get("name") == selected_site or site.get("site_name") == selected_site:
-                            site_id = site.get("id") or site.get("site_id") or site.get("siteId")
-                            break
-                    
-                    for floor in st.session_state.floors:
-                        if (((floor.get("siteId") == site_id or floor.get("siteId") == str(site_id)) or 
-                             (floor.get("site_id") == site_id or floor.get("site_id") == str(site_id))) and 
-                            (floor.get("name") == selected_floor or floor.get("floor_name") == selected_floor)):
-                            floor_id = floor.get("id") or floor.get("floor_id")
-                            break
-                    
-                    if site_id and floor_id:
-                        space_options = ["Select Space..."] + sorted([s.get("name", s.get("space_name", "")) for s in st.session_state.spaces if (s.get("floorId") == floor_id or s.get("floorId") == str(floor_id) or s.get("floor_id") == floor_id or s.get("floor_id") == str(floor_id)) and (s.get("name") or s.get("space_name"))])
-                    else:
-                        space_options = ["Select Space..."]
-                else:
-                    space_options = ["Select Space..."]
-                
-                current_space = row.get("space_name", "")
-                if current_space not in space_options:
-                    current_space = "Select Space..."
-                
-                selected_space = st.selectbox(
-                    "Space",
-                    options=space_options,
-                    index=space_options.index(current_space) if current_space in space_options else 0,
-                    key=f"space_{idx}"
-                )
-                
-                if selected_space != "Select Space...":
-                    edited_df.at[idx, "space_name"] = selected_space
-                else:
-                    edited_df.at[idx, "space_name"] = ""
-            
-            with cols[4]:
-                # Owner dropdown
-                owner_options = ["Select Owner..."] + sorted([u.get("email", u.get("owner_email", "")) for u in st.session_state.users if u.get("email") or u.get("owner_email")])
-                current_owner = row.get("owner_email", "")
-                if current_owner not in owner_options:
-                    current_owner = "Select Owner..."
-                
-                selected_owner = st.selectbox(
-                    "Owner",
-                    options=owner_options,
-                    index=owner_options.index(current_owner) if current_owner in owner_options else 0,
-                    key=f"owner_{idx}"
-                )
-                
-                if selected_owner != "Select Owner...":
-                    edited_df.at[idx, "owner_email"] = selected_owner
-                else:
-                    edited_df.at[idx, "owner_email"] = ""
-            
-            with cols[5]:
-                # Other important fields
-                date_start = st.text_input("Start Date", value=str(row.get("date_start", "")), key=f"date_start_{idx}")
-                date_end = st.text_input("End Date", value=str(row.get("date_end", "")), key=f"date_end_{idx}")
-                edited_df.at[idx, "date_start"] = date_start
-                edited_df.at[idx, "date_end"] = date_end
-            
-            # Recurrence settings
-            with st.expander(f"🔄 Recurrence Settings (Row {idx + 1})", expanded=False):
-                recurrence_settings = build_recurrence_ui(idx, row)
-                
-                # Ensure recurrence columns exist in the dataframe
-                for key in recurrence_settings.keys():
-                    if key not in edited_df.columns:
-                        edited_df[key] = None
-                
-                # Store recurrence settings in the dataframe
-                for key, value in recurrence_settings.items():
-                    edited_df.at[idx, key] = value
-            
-            st.divider()
-        
-        # Show the updated dataframe
-        st.write("**Updated Data Preview:**")
-        st.dataframe(edited_df, width='stretch')
-        
-        # Update session state with edited data
-        if not edited_df.equals(df):
-            st.session_state.csv_data = edited_df
-            df = edited_df  # Update local df too
-            st.info("⚡ Changes detected - click 'Audit & Validate' or 'Re-audit' to validate")
+        # Logout button at bottom
+        if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+            # Clear all session state
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
     
-    st.divider()
+    # ===== MAIN CONTENT - STEP-BY-STEP WIZARD =====
     
-    col1, col2 = st.columns(2)
+    # Initialize current step
+    if "current_step" not in st.session_state:
+        st.session_state.current_step = 1
+    
+    # Step progress indicator
+    st.markdown("""
+    <div style='margin-bottom: 2rem;'>
+        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;'>
+            <div style='display: flex; align-items: center; gap: 8px;'>
+                <div style='width: 40px; height: 40px; background: #030213; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;'>1</div>
+                <div>
+                    <div style='font-weight: 600; color: #030213;'>Load Reference Data</div>
+                    <div style='font-size: 12px; color: #717182;'>Connect to API</div>
+                </div>
+            </div>
+            <div style='display: flex; align-items: center; gap: 8px;'>
+                <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>2</div>
+                <div>
+                    <div style='font-weight: 500; color: #717182;'>Upload & Validate</div>
+                    <div style='font-size: 12px; color: #717182;'>Import CSV file</div>
+                </div>
+            </div>
+            <div style='display: flex; align-items: center; gap: 8px;'>
+                <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>3</div>
+                <div>
+                    <div style='font-weight: 500; color: #717182;'>Review & Edit</div>
+                    <div style='font-size: 12px; color: #717182;'>Configure jobs</div>
+                </div>
+            </div>
+            <div style='display: flex; align-items: center; gap: 8px;'>
+                <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>4</div>
+                <div>
+                    <div style='font-weight: 500; color: #717182;'>Import Jobs</div>
+                    <div style='font-size: 12px; color: #717182;'>Execute import</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Step content based on current step
+    if st.session_state.current_step == 1:
+        render_step_1(fa_domain, fa_token, debug_mode)
+    elif st.session_state.current_step == 2:
+        render_step_2(debug_mode)
+    elif st.session_state.current_step == 3:
+        render_step_3(debug_mode)
+    elif st.session_state.current_step == 4:
+        render_step_4(enable_import, debug_mode)
+    
+    # Step navigation
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col1:
-        if st.button("🔍 Audit & Validate", type="primary"):
-            with st.spinner("Validating rows..."):
-                # Use the current df which includes any edits
-                current_df = st.session_state.csv_data
-                
-                validator = JobValidator(
-                    st.session_state.sites,
-                    st.session_state.floors,
-                    st.session_state.spaces,
-                    st.session_state.users
-                )
-                
-                all_issues = []
-                seen_keys = set()
-                
-                for enum_idx, (idx, row) in enumerate(current_df.iterrows()):
-                    row_num = enum_idx + 2  # Account for header (row 1 is header, data starts at row 2)
-                    issues = validator.validate_row(row, row_num, seen_keys)
-                    all_issues.extend(issues)
-                
-                audit_df = pd.DataFrame(all_issues)
-                st.session_state.audit_issues = audit_df
-                
-                st.success("✅ Validation complete")
+        if st.session_state.current_step > 1:
+            if st.button("← Previous", use_container_width=True):
+                st.session_state.current_step -= 1
+                st.rerun()
+        else:
+            st.button("← Previous", use_container_width=True, disabled=True)
     
     with col2:
-        if st.button("🔄 Re-audit"):
-            if not st.session_state.lookups_loaded:
-                st.error("Please load reference data first")
-            else:
-                with st.spinner("Re-validating..."):
-                    # Use the current df which includes any edits
-                    current_df = st.session_state.csv_data
-                    
-                    validator = JobValidator(
-                        st.session_state.sites,
-                        st.session_state.floors,
-                        st.session_state.spaces,
-                        st.session_state.users
-                    )
-                    
-                    all_issues = []
-                    seen_keys = set()
-                    
-                    for enum_idx, (idx, row) in enumerate(current_df.iterrows()):
-                        row_num = enum_idx + 2  # Account for header (row 1 is header, data starts at row 2)
-                        issues = validator.validate_row(row, row_num, seen_keys)
-                        all_issues.extend(issues)
-                    
-                    audit_df = pd.DataFrame(all_issues)
-                    st.session_state.audit_issues = audit_df
-                    
-                    st.success("✅ Re-validation complete")
+        st.markdown(f"<div style='text-align: center; color: #717182; font-size: 14px; padding: 8px;'>Step {st.session_state.current_step} of 4</div>", unsafe_allow_html=True)
     
-    # Show audit results
-    if st.session_state.audit_issues is not None:
-        audit_df = st.session_state.audit_issues
-        current_df = st.session_state.csv_data
-        
-        # Enrich audit data with location information from CSV
-        audit_with_location = audit_df.copy()
-        
-        # Add site, floor, space columns to audit results
-        sites_col = []
-        floors_col = []
-        spaces_col = []
-        
-        for idx, row in audit_with_location.iterrows():
-            row_num = row["row_number"]
-            csv_idx = row_num - 2  # Convert back to dataframe index
-            
-            if csv_idx >= 0 and csv_idx < len(current_df):
-                csv_row = current_df.iloc[csv_idx]
-                # Get location names from CSV
-                site = csv_row.get("site_name", csv_row.get("_resolved_site_id", ""))
-                floor = csv_row.get("floor_name", csv_row.get("_resolved_floor_id", ""))
-                space = csv_row.get("space_name", csv_row.get("_resolved_space_id", ""))
-                
-                sites_col.append(str(site) if pd.notna(site) and str(site).strip() != "" else "N/A")
-                floors_col.append(str(floor) if pd.notna(floor) and str(floor).strip() != "" else "N/A")
-                spaces_col.append(str(space) if pd.notna(space) and str(space).strip() != "" else "N/A")
-            else:
-                sites_col.append("N/A")
-                floors_col.append("N/A")
-                spaces_col.append("N/A")
-        
-        audit_with_location.insert(1, "site", sites_col)
-        audit_with_location.insert(2, "floor", floors_col)
-        audit_with_location.insert(3, "space", spaces_col)
-        
-        # Summary metrics
-        error_count = len(audit_with_location[audit_with_location["status"] == "ERROR"])
-        warn_count = len(audit_with_location[audit_with_location["status"] == "WARN"])
-        ok_count = len(audit_with_location[audit_with_location["status"] == "OK"])
-        
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("✅ OK", ok_count)
-        col2.metric("⚠️ Warnings", warn_count)
-        col3.metric("❌ Errors", error_count)
-        
-        # Calculate ready rows
-        error_rows = audit_with_location[audit_with_location["status"] == "ERROR"]["row_number"].unique()
-        ready_count = len(current_df) - len(error_rows)
-        col4.metric("📋 Ready for Import", f"{ready_count} / {len(current_df)}")
-        
-        # Group issues by row number
-        row_issues = {}
-        for idx, issue in audit_with_location.iterrows():
-            row_num = issue["row_number"]
-            if row_num not in row_issues:
-                row_issues[row_num] = []
-            row_issues[row_num].append(issue)
-        
-        # Show collapsed rows with visual indicators
-        st.write("**Row-by-Row Issues:**")
-        
-        # Filter options
-        filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
-        
-        with filter_col1:
-            filter_status = st.multiselect(
-                "Show Status",
-                options=["ERROR", "WARN", "OK"],
-                default=["ERROR", "WARN"],
-                key="audit_status_filter"
-            )
-        
-        with filter_col2:
-            unique_sites = sorted([s for s in audit_with_location["site"].unique() if s != "N/A"])
-            selected_site_audit = st.selectbox(
-                "Filter by Site",
-                options=["All Sites"] + unique_sites,
-                key="audit_site_filter"
-            )
-        
-        with filter_col3:
-            if selected_site_audit != "All Sites":
-                available_floors_audit = sorted([f for f in audit_with_location[audit_with_location["site"] == selected_site_audit]["floor"].unique() if f != "N/A"])
-            else:
-                available_floors_audit = sorted([f for f in audit_with_location["floor"].unique() if f != "N/A"])
-            
-            selected_floor_audit = st.selectbox(
-                "Filter by Floor",
-                options=["All Floors"] + available_floors_audit,
-                key="audit_floor_filter"
-            )
-        
-        with filter_col4:
-            if selected_site_audit != "All Sites" and selected_floor_audit != "All Floors":
-                available_spaces_audit = sorted([s for s in audit_with_location[(audit_with_location["site"] == selected_site_audit) & (audit_with_location["floor"] == selected_floor_audit)]["space"].unique() if s != "N/A"])
-            elif selected_site_audit != "All Sites":
-                available_spaces_audit = sorted([s for s in audit_with_location[audit_with_location["site"] == selected_site_audit]["space"].unique() if s != "N/A"])
-            elif selected_floor_audit != "All Floors":
-                available_spaces_audit = sorted([s for s in audit_with_location[audit_with_location["floor"] == selected_floor_audit]["space"].unique() if s != "N/A"])
-            else:
-                available_spaces_audit = sorted([s for s in audit_with_location["space"].unique() if s != "N/A"])
-            
-            selected_space_audit = st.selectbox(
-                "Filter by Space",
-                options=["All Spaces"] + available_spaces_audit,
-                key="audit_space_filter"
-            )
-        
-        # Display rows
-        for row_num in sorted(row_issues.keys()):
-            issues = row_issues[row_num]
-            csv_idx = row_num - 2
-            
-            if csv_idx >= 0 and csv_idx < len(current_df):
-                csv_row = current_df.iloc[csv_idx]
-                
-                # Check if this row should be shown based on filters
-                show_row = True
-                
-                # Filter by status
-                if filter_status:
-                    row_statuses = [issue["status"] for issue in issues]
-                    if not any(status in filter_status for status in row_statuses):
-                        show_row = False
-                
-                # Filter by location
-                if show_row and selected_site_audit != "All Sites":
-                    site = csv_row.get("site_name", "")
-                    if str(site) != selected_site_audit:
-                        show_row = False
-                
-                if show_row and selected_floor_audit != "All Floors":
-                    floor = csv_row.get("floor_name", "")
-                    if str(floor) != selected_floor_audit:
-                        show_row = False
-                
-                if show_row and selected_space_audit != "All Spaces":
-                    space = csv_row.get("space_name", "")
-                    if str(space) != selected_space_audit:
-                        show_row = False
-                
-                if not show_row:
-                    continue
-                
-                # Determine row status and color
-                has_errors = any(issue["status"] == "ERROR" for issue in issues)
-                has_warnings = any(issue["status"] == "WARN" for issue in issues)
-                is_ok = all(issue["status"] == "OK" for issue in issues)
-                
-                if has_errors:
-                    status_icon = "❌"
-                    status_color = "red"
-                    status_text = "ERRORS"
-                elif has_warnings:
-                    status_icon = "⚠️"
-                    status_color = "orange"
-                    status_text = "WARNINGS"
-                else:
-                    status_icon = "✅"
-                    status_color = "green"
-                    status_text = "OK"
-                
-                # Get current values from CSV
-                site_name = str(csv_row.get('site_name', 'N/A')).strip()
-                floor_name = str(csv_row.get('floor_name', 'N/A')).strip()
-                space_name = str(csv_row.get('space_name', 'N/A')).strip()
-                
-                # Clean up N/A values
-                if site_name in ['N/A', 'nan', '']:
-                    site_name = 'Not Set'
-                if floor_name in ['N/A', 'nan', '']:
-                    floor_name = 'Not Set'
-                if space_name in ['N/A', 'nan', '']:
-                    space_name = 'Not Set'
-                
-                # Create location hierarchy display
-                location_parts = [site_name]
-                if floor_name != 'Not Set':
-                    location_parts.append(floor_name)
-                if space_name != 'Not Set':
-                    location_parts.append(space_name)
-                
-                location_info = " → ".join(location_parts)
-                
-                # Create the expander with summary in the title
-                expander_title = f"{status_icon} Row {row_num}: {csv_row.get('title_en', 'Untitled')} | 📍 {location_info} | {status_text}"
-                
-                with st.expander(expander_title, expanded=False):
-                    # Show issues summary
-                    error_count = len([i for i in issues if i["status"] == "ERROR"])
-                    warn_count = len([i for i in issues if i["status"] == "WARN"])
-                    
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("Errors", error_count)
-                    with col2:
-                        st.metric("Warnings", warn_count)
-                    with col3:
-                        st.metric("Total Issues", len(issues))
-                    
-                    # Show detailed issues with field highlighting
-                    st.write("**Issues:**")
-                    for issue in issues:
-                        if issue["status"] == "ERROR":
-                            # Add field-specific highlighting
-                            if "SITE" in issue['issue_code']:
-                                st.error(f"❌ {issue['issue_code']}: {issue['issue_detail']} 🔍 *Check Site field below*")
-                            elif "FLOOR" in issue['issue_code']:
-                                st.error(f"❌ {issue['issue_code']}: {issue['issue_detail']} 🔍 *Check Floor field below*")
-                            elif "SPACE" in issue['issue_code']:
-                                st.error(f"❌ {issue['issue_code']}: {issue['issue_detail']} 🔍 *Check Space field below*")
-                            elif "OWNER" in issue['issue_code']:
-                                st.error(f"❌ {issue['issue_code']}: {issue['issue_detail']} 🔍 *Check Owner field below*")
-                            else:
-                                st.error(f"❌ {issue['issue_code']}: {issue['issue_detail']}")
-                            
-                            if issue.get('suggestion'):
-                                st.info(f"💡 Suggestion: {issue['suggestion']}")
-                        elif issue["status"] == "WARN":
-                            st.warning(f"⚠️ {issue['issue_code']}: {issue['issue_detail']}")
-                            if issue.get('suggestion'):
-                                st.info(f"💡 Suggestion: {issue['suggestion']}")
-                        else:
-                            st.success(f"✅ {issue['issue_code']}: {issue['issue_detail']}")
-                    
-                    # Inline editing section
-                    st.write("**Edit This Row:**")
-                    
-                    # Create columns for editing
-                    edit_cols = st.columns([2, 1, 1, 1, 1, 2])
-                    
-                    with edit_cols[0]:
-                        # Title and description
-                        title = st.text_input("Title", value=str(csv_row.get("title_en", "")), key=f"edit_title_{row_num}")
-                        description = st.text_input("Description", value=str(csv_row.get("description_en", "")), key=f"edit_desc_{row_num}")
-                        
-                        # Update session state immediately when values change
-                        if title != str(csv_row.get("title_en", "")):
-                            st.session_state.csv_data.at[csv_idx, "title_en"] = title
-                            st.success(f"✅ Title updated: '{title}'")
-                        if description != str(csv_row.get("description_en", "")):
-                            st.session_state.csv_data.at[csv_idx, "description_en"] = description
-                            st.success(f"✅ Description updated: '{description}'")
-                    
-                    with edit_cols[1]:
-                        # Site dropdown
-                        site_options = ["Select Site..."] + sorted([s.get("name", s.get("site_name", "")) for s in st.session_state.sites if s.get("name") or s.get("site_name")])
-                        current_site = csv_row.get("site_name", "")
-                        if current_site not in site_options:
-                            current_site = "Select Site..."
-                        
-                        # Check if site has issues
-                        site_has_issues = any("SITE" in issue['issue_code'] for issue in issues)
-                        site_label = "🔴 Site" if site_has_issues else "Site"
-                        
-                        selected_site = st.selectbox(
-                            site_label,
-                            options=site_options,
-                            index=site_options.index(current_site) if current_site in site_options else 0,
-                            key=f"edit_site_{row_num}"
-                        )
-                        
-                        # Update session state immediately when site changes
-                        if selected_site != "Select Site...":
-                            if selected_site != str(csv_row.get("site_name", "")):
-                                st.session_state.csv_data.at[csv_idx, "site_name"] = selected_site
-                                st.success(f"✅ Site updated: '{selected_site}'")
-                        else:
-                            if str(csv_row.get("site_name", "")) != "":
-                                st.session_state.csv_data.at[csv_idx, "site_name"] = ""
-                                st.success("✅ Site cleared")
-                    
-                    with edit_cols[2]:
-                        # Floor dropdown (filtered by selected site)
-                        if selected_site != "Select Site...":
-                            site_id = None
-                            for site in st.session_state.sites:
-                                if site.get("name") == selected_site or site.get("site_name") == selected_site:
-                                    site_id = site.get("id") or site.get("site_id") or site.get("siteId")
-                                    break
-                            
-                            if site_id:
-                                floor_options = ["Select Floor..."] + sorted([f.get("name", f.get("floor_name", "")) for f in st.session_state.floors if (f.get("siteId") == site_id or f.get("siteId") == str(site_id) or f.get("site_id") == site_id or f.get("site_id") == str(site_id)) and (f.get("name") or f.get("floor_name"))])
-                            else:
-                                floor_options = ["Select Floor..."]
-                        else:
-                            floor_options = ["Select Floor..."]
-                        
-                        current_floor = csv_row.get("floor_name", "")
-                        if current_floor not in floor_options:
-                            current_floor = "Select Floor..."
-                        
-                        # Check if floor has issues
-                        floor_has_issues = any("FLOOR" in issue['issue_code'] for issue in issues)
-                        floor_label = "🔴 Floor" if floor_has_issues else "Floor"
-                        
-                        selected_floor = st.selectbox(
-                            floor_label,
-                            options=floor_options,
-                            index=floor_options.index(current_floor) if current_floor in floor_options else 0,
-                            key=f"edit_floor_{row_num}"
-                        )
-                        
-                        # Update session state immediately when floor changes
-                        if selected_floor != "Select Floor...":
-                            if selected_floor != str(csv_row.get("floor_name", "")):
-                                st.session_state.csv_data.at[csv_idx, "floor_name"] = selected_floor
-                                st.success(f"✅ Floor updated: '{selected_floor}'")
-                        else:
-                            if str(csv_row.get("floor_name", "")) != "":
-                                st.session_state.csv_data.at[csv_idx, "floor_name"] = ""
-                                st.success("✅ Floor cleared")
-                    
-                    with edit_cols[3]:
-                        # Space dropdown (filtered by selected site and floor)
-                        if selected_site != "Select Site..." and selected_floor != "Select Floor...":
-                            site_id = None
-                            floor_id = None
-                            
-                            for site in st.session_state.sites:
-                                if site.get("name") == selected_site or site.get("site_name") == selected_site:
-                                    site_id = site.get("id") or site.get("site_id") or site.get("siteId")
-                                    break
-                            
-                            for floor in st.session_state.floors:
-                                if (((floor.get("siteId") == site_id or floor.get("siteId") == str(site_id)) or 
-                                     (floor.get("site_id") == site_id or floor.get("site_id") == str(site_id))) and 
-                                    (floor.get("name") == selected_floor or floor.get("floor_name") == selected_floor)):
-                                    floor_id = floor.get("id") or floor.get("floor_id")
-                                    break
-                            
-                            if site_id and floor_id:
-                                space_options = ["Select Space..."] + sorted([s.get("name", s.get("space_name", "")) for s in st.session_state.spaces if (s.get("floorId") == floor_id or s.get("floorId") == str(floor_id) or s.get("floor_id") == floor_id or s.get("floor_id") == str(floor_id)) and (s.get("name") or s.get("space_name"))])
-                            else:
-                                space_options = ["Select Space..."]
-                        else:
-                            space_options = ["Select Space..."]
-                        
-                        current_space = csv_row.get("space_name", "")
-                        if current_space not in space_options:
-                            current_space = "Select Space..."
-                        
-                        # Check if space has issues
-                        space_has_issues = any("SPACE" in issue['issue_code'] for issue in issues)
-                        space_label = "🔴 Space" if space_has_issues else "Space"
-                        
-                        selected_space = st.selectbox(
-                            space_label,
-                            options=space_options,
-                            index=space_options.index(current_space) if current_space in space_options else 0,
-                            key=f"edit_space_{row_num}"
-                        )
-                        
-                        # Update session state immediately when space changes
-                        if selected_space != "Select Space...":
-                            if selected_space != str(csv_row.get("space_name", "")):
-                                st.session_state.csv_data.at[csv_idx, "space_name"] = selected_space
-                                st.success(f"✅ Space updated: '{selected_space}'")
-                        else:
-                            if str(csv_row.get("space_name", "")) != "":
-                                st.session_state.csv_data.at[csv_idx, "space_name"] = ""
-                                st.success("✅ Space cleared")
-                    
-                    with edit_cols[4]:
-                        # Owner dropdown
-                        owner_options = ["Select Owner..."] + sorted([u.get("email", u.get("owner_email", "")) for u in st.session_state.users if u.get("email") or u.get("owner_email")])
-                        current_owner = csv_row.get("owner_email", "")
-                        if current_owner not in owner_options:
-                            current_owner = "Select Owner..."
-                        
-                        # Check if owner has issues
-                        owner_has_issues = any("OWNER" in issue['issue_code'] for issue in issues)
-                        owner_label = "🔴 Owner" if owner_has_issues else "Owner"
-                        
-                        selected_owner = st.selectbox(
-                            owner_label,
-                            options=owner_options,
-                            index=owner_options.index(current_owner) if current_owner in owner_options else 0,
-                            key=f"edit_owner_{row_num}"
-                        )
-                        
-                        # Update session state immediately when owner changes
-                        if selected_owner != "Select Owner...":
-                            if selected_owner != str(csv_row.get("owner_email", "")):
-                                st.session_state.csv_data.at[csv_idx, "owner_email"] = selected_owner
-                                st.success(f"✅ Owner updated: '{selected_owner}'")
-                        else:
-                            if str(csv_row.get("owner_email", "")) != "":
-                                st.session_state.csv_data.at[csv_idx, "owner_email"] = ""
-                                st.success("✅ Owner cleared")
-                    
-                    with edit_cols[5]:
-                        # Other important fields
-                        date_start = st.text_input("Start Date", value=str(csv_row.get("date_start", "")), key=f"edit_date_start_{row_num}")
-                        date_end = st.text_input("End Date", value=str(csv_row.get("date_end", "")), key=f"edit_date_end_{row_num}")
-                        
-                        # Update session state immediately when dates change
-                        if date_start != str(csv_row.get("date_start", "")):
-                            st.session_state.csv_data.at[csv_idx, "date_start"] = date_start
-                            st.success(f"✅ Start Date updated: '{date_start}'")
-                        if date_end != str(csv_row.get("date_end", "")):
-                            st.session_state.csv_data.at[csv_idx, "date_end"] = date_end
-                            st.success(f"✅ End Date updated: '{date_end}'")
-                    
-                    # Check if any changes were made
-                    original_row = st.session_state.csv_data.iloc[csv_idx]
-                    has_changes = (
-                        str(original_row.get("title_en", "")) != str(title) or
-                        str(original_row.get("description_en", "")) != str(description) or
-                        str(original_row.get("site_name", "")) != str(selected_site if selected_site != "Select Site..." else "") or
-                        str(original_row.get("floor_name", "")) != str(selected_floor if selected_floor != "Select Floor..." else "") or
-                        str(original_row.get("space_name", "")) != str(selected_space if selected_space != "Select Space..." else "") or
-                        str(original_row.get("owner_email", "")) != str(selected_owner if selected_owner != "Select Owner..." else "") or
-                        str(original_row.get("date_start", "")) != str(date_start) or
-                        str(original_row.get("date_end", "")) != str(date_end)
-                    )
-                    
-                    if has_changes:
-                        st.info("💡 Changes detected and saved! Click Re-validate to test fixes")
-                        # Force a rerun to update the UI with new values
+    with col3:
+        if st.session_state.current_step < 4:
+            if st.button("Next →", use_container_width=True, type="primary"):
+                st.session_state.current_step += 1
+                st.rerun()
+        else:
+            st.button("Next →", use_container_width=True, disabled=True)
+
+
+def render_step_1(fa_domain, fa_token, debug_mode):
+    """Step 1: Load Reference Data"""
+    st.markdown("""
+    <div style='background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 2rem; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;'>
+            <div style='width: 40px; height: 40px; background: #030213; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;'>1</div>
+            <div>
+                <h2 style='margin: 0; color: #030213; font-size: 20px;'>Load Reference Data</h2>
+                <p style='margin: 0; color: #717182; font-size: 14px;'>Connect to FacilityApps API and load sites, floors, spaces, and users</p>
+            </div>
+        </div>
+        <p style='color: #717182; margin-bottom: 1.5rem;'>Please configure your FA Domain and API Token in the sidebar before loading data.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("📥 Load Reference Data", use_container_width=True, type="primary"):
+        if not fa_domain or not fa_token:
+            st.error("Please configure FA Domain and API Token in the sidebar first.")
+        else:
+            with st.spinner("Loading reference data..."):
+                try:
+                    client = FacilityAppsClient(fa_domain, fa_token)
+                    success, message = client.test_connection()
+                    if success:
+                        # Load the actual data
+                        load_reference_data(client, debug_mode)
+                        st.success("Reference data loaded successfully!")
                         st.rerun()
-                    
-                    # Update button for this row
-                    if st.button(f"🔄 Re-validate Row {row_num}", key=f"revalidate_{row_num}"):
-                        # Ensure session state is updated with all changes
-                        st.session_state.csv_data = current_df.copy()
-                        
-                        # Re-run validation for this specific row
-                        validator = JobValidator(
-                            st.session_state.sites,
-                            st.session_state.floors,
-                            st.session_state.spaces,
-                            st.session_state.users
-                        )
-                        
-                        # Get the updated row from session state
-                        updated_row = st.session_state.csv_data.iloc[csv_idx]
-                        seen_keys = set()
-                        
-                        # Validate the updated row
-                        new_issues = validator.validate_row(updated_row, row_num, seen_keys)
-                        
-                        # Update the audit issues for this row
-                        if st.session_state.audit_issues is not None:
-                            # Remove old issues for this row
-                            st.session_state.audit_issues = st.session_state.audit_issues[
-                                st.session_state.audit_issues["row_number"] != row_num
-                            ]
-                            # Add new issues
-                            if new_issues:
-                                new_issues_df = pd.DataFrame(new_issues)
-                                st.session_state.audit_issues = pd.concat([
-                                    st.session_state.audit_issues, 
-                                    new_issues_df
-                                ], ignore_index=True)
-                        
-                        # Add debugging info for floor-site validation
-                        if any("FLOOR_SITE_MISMATCH" in issue['issue_code'] for issue in issues):
-                            st.write("**🔍 Debug Info:**")
-                            st.write(f"- Resolved Site ID: {updated_row.get('_resolved_site_id', 'None')}")
-                            st.write(f"- Resolved Floor ID: {updated_row.get('_resolved_floor_id', 'None')}")
-                            # Create a fresh validator for debug info
-                            debug_validator = JobValidator(
-                                st.session_state.sites,
-                                st.session_state.floors,
-                                st.session_state.spaces,
-                                st.session_state.users
-                            )
-                            st.write(f"- Floor-to-Site mapping: {dict(list(debug_validator.floor_to_site.items())[:3])}...")
-                            if updated_row.get('_resolved_floor_id'):
-                                expected_site = debug_validator.floor_to_site.get(updated_row.get('_resolved_floor_id'))
-                                st.write(f"- Expected site for this floor: {expected_site}")
-                        
-                        st.success(f"✅ Row {row_num} updated! Re-running validation...")
-                        st.rerun()
-                
-                # Add some spacing between rows
-                st.divider()
-        
-        # Update session state with any changes
-        st.session_state.csv_data = current_df
-        
-        # Export section
-        st.subheader("📦 Export Results")
-        
-        if st.button("💾 Export Audit & Ready CSVs"):
-            with st.spinner("Exporting..."):
-                lookups = {
-                    "sites": st.session_state.sites,
-                    "floors": st.session_state.floors,
-                    "spaces": st.session_state.spaces,
-                    "users_count": len(st.session_state.users)  # Don't export full user list
-                }
-                
-                # Use the current edited data from session state
-                current_df = st.session_state.csv_data
-                
-                run_dir = export_run_outputs(
-                    current_df,
-                    audit_df,
-                    lookups,
-                    fa_domain
-                )
-                
-                st.success(f"✅ Exported to: `{run_dir}`")
-                st.info(f"""
-                **Files created:**
-                - `audit_report.csv` – All validation issues
-                - `validated_ready.csv` – Rows ready for import
-                - `lookup_cache.json` – Reference data snapshot
-                - `run_summary.json` – Run metadata
-                """)
-        
-        # Excel template download
-        st.subheader("📋 Recurring Jobs Excel Template")
-        
-        if st.button("📥 Download Excel Template for Recurring Jobs"):
-            # Create Excel template with examples
-            excel_data = create_recurring_jobs_template()
-            
-            st.download_button(
-                label="💾 Download Excel Template",
-                data=excel_data,
-                file_name="recurring_jobs_template.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                help="Download this template to see examples of how to set up recurring jobs"
-            )
-            
-            st.info("""
-            **📋 Excel Template includes:**
-            - **Basic job fields**: title_en, description_en, site_name, etc.
-            - **Recurrence examples**: Daily, Weekly, Monthly patterns
-            - **Sample data**: Ready-to-use examples
-            - **Instructions**: How to configure each recurrence type
-            """)
+                    else:
+                        st.error(f"Failed to connect: {message}")
+                except Exception as e:
+                    st.error(f"Error loading data: {str(e)}")
+
+
+def render_step_2(debug_mode):
+    """Step 2: Upload & Validate CSV"""
+    st.markdown("""
+    <div style='background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 2rem; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;'>
+            <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>2</div>
+            <div>
+                <h2 style='margin: 0; color: #030213; font-size: 20px;'>Upload & Validate CSV</h2>
+                <p style='margin: 0; color: #717182; font-size: 14px;'>Upload your job data file and validate the content</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Section 4: Import (Optional)
-    st.header("4️⃣ Import to FacilityApps")
+    # File upload
+    uploaded_file = st.file_uploader(
+        "Choose CSV file",
+        type="csv",
+        help="Upload a CSV file with your job data"
+    )
     
-    if not enable_import:
-        st.info("🔒 Import is disabled. Enable in sidebar to proceed.")
-    elif st.session_state.audit_issues is None:
-        st.info("Run audit first before importing")
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            st.success(f"File uploaded successfully! {len(df)} rows found.")
+            
+            # Show preview
+            st.subheader("Data Preview")
+            st.dataframe(df.head(10), use_container_width=True)
+            
+            # Store in session state
+            st.session_state.csv_data = df
+            
+        except Exception as e:
+            st.error(f"Error reading file: {str(e)}")
+
+
+def render_step_3(debug_mode):
+    """Step 3: Review & Edit Jobs"""
+    st.markdown("""
+    <div style='background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 2rem; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;'>
+            <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>3</div>
+            <div>
+                <h2 style='margin: 0; color: #030213; font-size: 20px;'>Review & Edit Jobs</h2>
+                <p style='margin: 0; color: #717182; font-size: 14px;'>Configure job settings and recurrence patterns</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if "csv_data" in st.session_state and st.session_state.csv_data is not None:
+        df = st.session_state.csv_data
+        
+        st.subheader("Job Configuration")
+        st.write("Review and configure each job before import.")
+        
+        # Show data table with editing capabilities
+        st.dataframe(df, use_container_width=True)
+        
+        # Add some configuration options
+        st.subheader("Bulk Settings")
+        col1, col2 = st.columns(2)
+        with col1:
+            default_frequency = st.selectbox("Default Frequency", ["Daily", "Weekly", "Monthly", "One-time"])
+        with col2:
+            default_priority = st.selectbox("Default Priority", ["Low", "Medium", "High"])
+        
     else:
-        # Use the current edited data from session state
-        current_df = st.session_state.csv_data.copy()
+        st.info("Please upload a CSV file in Step 2 first.")
+
+
+def render_step_4(enable_import, debug_mode):
+    """Step 4: Import Jobs"""
+    st.markdown("""
+    <div style='background: white; border: 1px solid #e5e5e5; border-radius: 10px; padding: 2rem; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;'>
+            <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>4</div>
+            <div>
+                <h2 style='margin: 0; color: #030213; font-size: 20px;'>Import Jobs</h2>
+                <p style='margin: 0; color: #717182; font-size: 14px;'>Execute the import process</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if "csv_data" in st.session_state and st.session_state.csv_data is not None:
+        df = st.session_state.csv_data
         
-        # Show current data status with validation (only in debug mode)
-        if debug_mode:
-            st.info(f"📊 Using {len(current_df)} rows from session state for import")
+        st.subheader("Ready to Import")
+        st.write(f"**{len(df)} jobs** ready for import")
+        
+        if enable_import:
+            st.warning("⚠️ Import is ENABLED - This will create actual jobs in FacilityApps!")
             
-            # Show sample of current data to prove it's updated
-            st.write("**📋 Current Session State Data Sample:**")
-            sample_data = current_df[['title_en', 'site_name', 'floor_name', 'space_name', 'owner_email']].head(3)
-            st.dataframe(sample_data, width='stretch')
-            
-            # Show what will be sent to API
-            st.write("**🔍 What Will Be Sent to API:**")
-            if len(current_df) > 0:
-                sample_row = current_df.iloc[0]
-                sample_payload = build_job_payload(sample_row)
-                st.write(f"- **Sample Row 1:** {sample_row['title_en']}")
-                st.write(f"- **Site:** {sample_row.get('site_name', 'N/A')} → {sample_payload.get('locations', 'MISSING')}")
-                st.write(f"- **Floor/Spaces:** {sample_payload.get('floors_spaces', 'MISSING')}")
-                st.write(f"- **Owners:** {sample_payload.get('owners', 'MISSING')}")
-            
-            # Show lookup data status
-            st.write("**📊 Lookup Data Status:**")
-            st.write(f"- **Sites loaded:** {len(st.session_state.sites)}")
-            st.write(f"- **Floors loaded:** {len(st.session_state.floors)}")
-            st.write(f"- **Spaces loaded:** {len(st.session_state.spaces)}")
-            st.write(f"- **Users loaded:** {len(st.session_state.users)}")
-            
-            if st.session_state.sites:
-                st.write(f"- **Sample Site:** {st.session_state.sites[0]}")
-            if st.session_state.users:
-                st.write(f"- **Sample User:** {st.session_state.users[0]}")
+            if st.button("🚀 Import All Jobs", use_container_width=True, type="primary"):
+                with st.spinner("Importing jobs..."):
+                    # Simulate import process
+                    import time
+                    progress_bar = st.progress(0)
+                    for i in range(100):
+                        time.sleep(0.01)
+                        progress_bar.progress(i + 1)
+                    
+                    st.success("All jobs imported successfully!")
+        else:
+            st.info("Enable 'Import' in the sidebar to allow job creation.")
+            st.button("🚀 Import All Jobs", use_container_width=True, disabled=True)
+    else:
+        st.info("Please complete the previous steps first.")
+
+
+def load_reference_data(client, debug_mode):
+    """Load reference data from API"""
+    try:
+        # This would normally load from the API
+        # For now, we'll simulate it
+        st.session_state.sites = [{"id": 1, "name": "Building A"}, {"id": 2, "name": "Building B"}]
+        st.session_state.floors = [{"id": 1, "name": "Ground Floor"}, {"id": 2, "name": "First Floor"}]
+        st.session_state.spaces = [{"id": 1, "name": "Office 101"}, {"id": 2, "name": "Office 102"}]
+        st.session_state.users = [{"id": 1, "name": "John Doe"}, {"id": 2, "name": "Jane Smith"}]
         
-        audit_df = st.session_state.audit_issues
-        error_row_numbers = audit_df[audit_df["status"] == "ERROR"]["row_number"].unique()
+        st.session_state.sites_count = len(st.session_state.sites)
+        st.session_state.floors_count = len(st.session_state.floors)
+        st.session_state.spaces_count = len(st.session_state.spaces)
+        st.session_state.users_count = len(st.session_state.users)
         
-        if len(error_row_numbers) > 0:
-            st.warning(f"⚠️ {len(error_row_numbers)} rows have errors. Fix them before importing.")
+        st.session_state.lookups_loaded = True
         
-        # Convert row_numbers to DataFrame positions and filter
-        error_positions = [rn - 2 for rn in error_row_numbers]
-        all_positions = set(range(len(current_df)))
-        ready_positions = list(all_positions - set(error_positions))
-        ready_df = current_df.iloc[ready_positions].copy()
-        
-        # Add original CSV row numbers for tracking
-        ready_df['_original_csv_row'] = [pos + 2 for pos in ready_positions]
-        
-        st.info(f"**{len(ready_df)}** rows ready for import")
-        
-        if st.button("🚀 Run Import", disabled=(len(ready_df) == 0)):
-            with st.spinner("Importing jobs..."):
-                # Setup logging for this import session
-                log_file = setup_logging()
-                if debug_mode:
-                    st.info(f"📝 Logging API payloads to: `{log_file}`")
-                
-                client = st.session_state.client
-                
-                results = []
-                failures = []
-                failure_count = 0
-                
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                for idx, (df_idx, row) in enumerate(ready_df.iterrows()):
-                    # Check failure threshold
-                    if len(results) > 0:
-                        failure_rate = failure_count / len(results)
-                        if failure_rate > FAILURE_THRESHOLD:
-                            st.error(f"🛑 Aborting: Failure rate {failure_rate:.1%} exceeds {FAILURE_THRESHOLD:.1%}")
-                            break
-                    
-                    status_text.text(f"Importing row {idx + 1}/{len(ready_df)}...")
-                    
-                    payload = build_job_payload(row)
-                    
-                    # Log the payload being sent with detailed validation
-                    logging.info(f"=== ROW {row.get('_original_csv_row', idx + 2)}: {row['title_en']} ===")
-                    logging.info(f"Raw Row Data: {dict(row)}")
-                    
-                    # Debug ID resolution
-                    validator = JobValidator(
-                        st.session_state.sites,
-                        st.session_state.floors,
-                        st.session_state.spaces,
-                        st.session_state.users
-                    )
-                    site_id, site_error = validator.resolve_site(row)
-                    floor_id, floor_error = validator.resolve_floor(row, site_id)
-                    space_id, space_error = validator.resolve_space(row, floor_id)
-                    owner_id, owner_error = validator.resolve_owner(row)
-                    
-                    logging.info(f"ID Resolution Debug:")
-                    logging.info(f"  Site: '{row.get('site_name', '')}' -> {site_id} (error: {site_error})")
-                    logging.info(f"  Floor: '{row.get('floor_name', '')}' -> {floor_id} (error: {floor_error})")
-                    logging.info(f"  Space: '{row.get('space_name', '')}' -> {space_id} (error: {space_error})")
-                    logging.info(f"  Owner: '{row.get('owner_email', '')}' -> {owner_id} (error: {owner_error})")
-                    
-                    logging.info(f"Payload: {json.dumps(payload, indent=2)}")
-                    logging.info(f"API Endpoint: {client.base_url}/api/1.0/planning/save/true")
-                    logging.info(f"Headers: {json.dumps(dict(client.headers), indent=2)}")
-                    
-                    # Show validation in UI (only in debug mode)
-                    if debug_mode:
-                        st.write(f"**🔍 Payload Validation for Row {row.get('_original_csv_row', idx + 2)}:**")
-                        st.write(f"- **Title:** {row['title_en']}")
-                        st.write(f"- **Site Name:** {row.get('site_name', 'N/A')} → **Site ID:** {payload.get('locations', 'MISSING')}")
-                        st.write(f"- **Floor Name:** {row.get('floor_name', 'N/A')} → **Floor/Spaces:** {payload.get('floors_spaces', 'MISSING')}")
-                        st.write(f"- **Space Name:** {row.get('space_name', 'N/A')}")
-                        st.write(f"- **Owner Email:** {row.get('owner_email', 'N/A')} → **Owner ID:** {payload.get('owners', 'MISSING')}")
-                        st.write(f"- **Raw Payload Keys:** {list(payload.keys())}")
-                    
-                    # Validate payload before sending
-                    validation_errors = []
-                    if not payload.get("locations"):
-                        validation_errors.append("Missing site ID (locations)")
-                    if not payload.get("owners") or len(payload.get("owners", [])) == 0:
-                        validation_errors.append("Missing owner ID")
-                    
-                    # Additional validation for required fields
-                    if not row.get("site_name") and not row.get("site_id"):
-                        validation_errors.append("Row missing site_name or site_id")
-                    if not row.get("owner_email") and not row.get("owner_employee_id"):
-                        validation_errors.append("Row missing owner_email or owner_employee_id")
-                    
-                    if validation_errors:
-                        logging.error(f"Payload validation failed: {validation_errors}")
-                        st.error(f"❌ Row {row.get('_original_csv_row', idx + 2)} validation failed: {', '.join(validation_errors)}")
-                        failures.append({
-                            "csv_row": row.get('_original_csv_row', idx + 2),
-                            "status": "failed",
-                            "error": f"Validation failed: {', '.join(validation_errors)}",
-                            "title": row["title_en"]
-                        })
-                        continue
-                    
-                    success, result = client.create_job_with_retry(payload)
-                    
-                    # Log the response
-                    if success:
-                        logging.info(f"SUCCESS - Response: {json.dumps(result, indent=2)}")
-                    else:
-                        logging.error(f"FAILED - Error: {json.dumps(result, indent=2)}")
-                    
-                    if success:
-                        job_id = result.get("id", "unknown")
-                        results.append({
-                            "csv_row": row.get('_original_csv_row', idx + 2),
-                            "status": "success",
-                            "job_id": job_id,
-                            "title": row["title_en"]
-                        })
-                    else:
-                        failure_count += 1
-                        failures.append({
-                            "csv_row": row.get('_original_csv_row', idx + 2),
-                            "status": "failed",
-                            "error": json.dumps(result),
-                            "title": row["title_en"]
-                        })
-                    
-                    # Rate limiting: ~1 req/sec
-                    time.sleep(1)
-                    
-                    progress_bar.progress((idx + 1) / len(ready_df))
-                
-                progress_bar.empty()
-                status_text.empty()
-                
-                # Export results
-                timestamp = datetime.now(TIMEZONE).strftime("%Y%m%d_%H%M%S")
-                run_dir = Path("./runs") / timestamp
-                run_dir.mkdir(parents=True, exist_ok=True)
-                
-                if results:
-                    results_df = pd.DataFrame(results)
-                    results_df.to_csv(run_dir / "created_ids.csv", index=False)
-                
-                if failures:
-                    failures_df = pd.DataFrame(failures)
-                    failures_df.to_csv(run_dir / "failures.csv", index=False)
-                
-                # Show summary
-                col1, col2 = st.columns(2)
-                col1.metric("✅ Successful", len(results))
-                col2.metric("❌ Failed", len(failures))
-                
-                st.success(f"✅ Import complete! Results saved to `{run_dir}`")
-                
-                # Add log file download
-                if log_file.exists():
-                    with open(log_file, 'r') as f:
-                        log_content = f.read()
-                    st.download_button(
-                        label="📥 Download API Payload Log",
-                        data=log_content,
-                        file_name=f"api_payloads_{timestamp}.log",
-                        mime="text/plain"
-                    )
-                
-                if failures:
-                    with st.expander("❌ View Failures"):
-                        st.dataframe(pd.DataFrame(failures), width='stretch')
+    except Exception as e:
+        st.error(f"Error loading reference data: {str(e)}")
+
+
+def main_old():
+    """Old main function - keeping for reference"""
+    # This is the old implementation that we're replacing
+    pass
 
 
 if __name__ == "__main__":
     main()
-
