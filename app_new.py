@@ -165,14 +165,9 @@ def check_password():
 def credentials_entered():
     """Check entered credentials"""
     try:
-        # Try Azure environment variables first (production)
-        master_username = os.getenv("MASTER_USERNAME", "")
-        master_password = os.getenv("MASTER_PASSWORD", "")
-        
-        # Fallback to Streamlit secrets (local development)
-        if not master_username or not master_password:
-            master_username = st.secrets["auth"]["master_username"]
-            master_password = st.secrets["auth"]["master_password"]
+        # Get credentials from secrets
+        master_username = st.secrets["auth"]["master_username"]
+        master_password = st.secrets["auth"]["master_password"]
         
         if (st.session_state["username"] == master_username and 
             st.session_state["password"] == master_password):
@@ -181,7 +176,7 @@ def credentials_entered():
         else:
             st.session_state.password_correct = False
     except KeyError:
-        st.error("Authentication not configured. Please check environment variables or secrets.toml")
+        st.error("Authentication not configured. Please check secrets.toml")
         st.session_state.password_correct = False
 
 def load_reference_data(client, debug_mode):
@@ -369,11 +364,11 @@ def main():
     if "users" not in st.session_state:
         st.session_state.users = []
     
-    # Load configuration from environment variables (Azure App Service)
+    # Load configuration from environment or secrets
     default_domain = os.getenv("FA_DOMAIN", "")
     default_token = os.getenv("FA_TOKEN", "")
     
-    # Try to get from Streamlit secrets as fallback (for local development)
+    # Try to get from secrets if not in env
     try:
         if not default_domain:
             default_domain = st.secrets.get("production", {}).get("FA_DOMAIN", "")
