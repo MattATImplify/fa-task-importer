@@ -32,7 +32,7 @@ class FacilityAppsClient:
     def test_connection(self):
         """Test API connection"""
         try:
-            response = requests.get(f"{self.base_url}/sites", headers=self.headers, timeout=10)
+            response = requests.get(f"{self.base_url}/planning/sites", headers=self.headers, timeout=10)
             if response.status_code == 200:
                 return True, "Connection successful!"
             else:
@@ -43,7 +43,7 @@ class FacilityAppsClient:
     def get_sites(self):
         """Get sites from API"""
         try:
-            response = requests.get(f"{self.base_url}/sites", headers=self.headers, timeout=10)
+            response = requests.get(f"{self.base_url}/planning/sites", headers=self.headers, timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, dict) and 'data' in data:
@@ -60,7 +60,7 @@ class FacilityAppsClient:
     def get_floors(self):
         """Get floors from API"""
         try:
-            response = requests.get(f"{self.base_url}/floors", headers=self.headers, timeout=10)
+            response = requests.get(f"{self.base_url}/planning/floors", headers=self.headers, timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, dict) and 'data' in data:
@@ -77,7 +77,7 @@ class FacilityAppsClient:
     def get_spaces(self):
         """Get spaces from API"""
         try:
-            response = requests.get(f"{self.base_url}/spaces", headers=self.headers, timeout=10)
+            response = requests.get(f"{self.base_url}/planning/spaces", headers=self.headers, timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, dict) and 'data' in data:
@@ -94,7 +94,7 @@ class FacilityAppsClient:
     def get_users(self):
         """Get users from API"""
         try:
-            response = requests.get(f"{self.base_url}/users", headers=self.headers, timeout=10)
+            response = requests.get(f"{self.base_url}/user", headers=self.headers, timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, dict) and 'data' in data:
