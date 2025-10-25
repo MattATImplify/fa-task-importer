@@ -1,11 +1,11 @@
-# Streamlit theme based on Figma design system
-# https://www.figma.com/make/nI65iKCEyzqO5dfqb3fXsL/FA-Job-Importer-Design-System
+# Streamlit theme - EXACT match to Figma design system
+# Source: https://www.figma.com/make/nI65iKCEyzqO5dfqb3fXsL/FA-Job-Importer-Design-System
 
 [theme]
-primaryColor = "#030213"          # --primary from Figma
-backgroundColor = "#ffffff"        # --background from Figma
-secondaryBackgroundColor = "#f9f9fb"  # --sidebar from Figma (slightly lighter)
-textColor = "#030213"             # --foreground from Figma
+primaryColor = "#3b82f6"          # --primary: Blue from Figma
+backgroundColor = "#fafafa"        # --background: Light gray from Figma
+secondaryBackgroundColor = "#f1f5f9"  # --secondary/muted: Lighter gray for cards
+textColor = "#1a1a1a"             # --foreground: Near black from Figma
 font = "sans serif"
 
 [browser]

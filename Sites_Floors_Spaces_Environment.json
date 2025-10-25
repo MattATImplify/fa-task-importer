@@ -1,0 +1,19 @@
+{
+  "id": "sites-floors-spaces-env",
+  "name": "FacilityApps - Sites, Floors & Spaces Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://demouk.facilityapps.com/api/v1",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "token",
+      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiN2MxMjc0NzRlNjg4MjAzYjlhOGEyY2E5YTMzNjJjYmIzODU4NGEwODBiNzQ1MzUyMWE3ZDJkNzM3YTc2NzM2NjMxN2E4OTE2ZTg0Nzc2NTIiLCJpYXQiOjE3NTg4OTM0NjYuOTIxNjg0LCJuYmYiOjE3NTg4OTM0NjYuOTIxNjg3LCJleHAiOjE3OTA0Mjk0NjYuOTEyMjU1LCJzdWIiOiIxNSIsInNjb3BlcyI6W119.RSSZg1E8lteBVu7SJPrZUpQWdlDFeuIk3QNQwH_VSJ_3kBtmdyOxy8qEbHw6_kA_W6Ml7u0uWcKu9Dc0_Hp2eGUcaLAR0UQP2x1EpIwO0TZxvQ0Kh0qbkeYe-1P6nEzvq03mVLmcJps6-GWAC0ocax1au9k4FFCn1ym8-B7S7I6Ps0GFh0pwPib4Ai24WvLLFgyVIHEv4Xb4EVibrPtSV-gQjMMWHSaju1yi76JvUyuR0uVaN9J-XvqOK2Ttiv_-aDNapIlvTJbdUqTuKGgNdR3rBhvBbBxLwErQDp0bM5HNviBlzoAnbIE-9QHgGPG_yD40X9Aq7VnWn6IcbIyxINCosIFs56djUMu6t5BRnyhoUu5uhLe82bwngT3GQOJa3n2Z5THIoxulpHW7IahBJc6Qo6ZR6NPnXJ1JXl8vVhEpVt_vlwWM9X50GdKccAuSS2GMbWwjYut-nGIl64-ZjWmEAjab_g-ZSQ3mBOa8VXCZ8Gdh44-kV9isbERFOjgdeUIvKBziZyXcuOC4wp4p_UazybMkhSBCQR93OWuEvPLa4CEDXoG2S__b_GBsMAa9IsGw2W0mmwegSgKbzMIt3zstmhROEG2z_mRNKry70aG6CanmMZXFGan1WfIseAL7ml5cW5I8GLqxz3FiH3vLADAcCAxRYxVdlLhTV7qrSkk",
+      "enabled": true,
+      "type": "secret"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

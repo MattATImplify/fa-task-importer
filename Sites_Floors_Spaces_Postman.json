@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "FacilityApps - Sites, Floors & Spaces",
+    "description": "Postman collection for FacilityApps Sites, Floors, and Spaces API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://demouk.facilityapps.com/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your_bearer_token_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sites",
+      "item": [
+        {
+          "name": "Get Sites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/planning/sites",
+              "host": ["{{base_url}}"],
+              "path": ["planning", "sites"]
+            },
+            "description": "Retrieve all sites from the FacilityApps system"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/planning/sites",
+                  "host": ["{{base_url}}"],
+                  "path": ["planning", "sites"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"828\",\n    \"name\": \"Main Office\",\n    \"address\": \"123 Main Street\",\n    \"city\": \"London\",\n    \"country\": \"UK\"\n  },\n  {\n    \"id\": \"829\",\n    \"name\": \"Branch Office\",\n    \"address\": \"456 Branch Road\",\n    \"city\": \"Manchester\",\n    \"country\": \"UK\"\n  }\n]"
+            }
+          ]
+        }
+      ],
+      "description": "Sites API endpoints for managing facility locations"
+    },
+    {
+      "name": "Floors",
+      "item": [
+        {
+          "name": "Get Floors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/planning/floors",
+              "host": ["{{base_url}}"],
+              "path": ["planning", "floors"]
+            },
+            "description": "Retrieve all floors from the FacilityApps system"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/planning/floors",
+                  "host": ["{{base_url}}"],
+                  "path": ["planning", "floors"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"2\",\n    \"name\": \"Ground Floor\",\n    \"siteId\": \"828\",\n    \"level\": 0\n  },\n  {\n    \"id\": \"3\",\n    \"name\": \"First Floor\",\n    \"siteId\": \"828\",\n    \"level\": 1\n  },\n  {\n    \"id\": \"4\",\n    \"name\": \"Ground Floor\",\n    \"siteId\": \"829\",\n    \"level\": 0\n  }\n]"
+            }
+          ]
+        }
+      ],
+      "description": "Floors API endpoints for managing building floors"
+    },
+    {
+      "name": "Spaces",
+      "item": [
+        {
+          "name": "Get Spaces",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/planning/spaces",
+              "host": ["{{base_url}}"],
+              "path": ["planning", "spaces"]
+            },
+            "description": "Retrieve all spaces from the FacilityApps system"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/planning/spaces",
+                  "host": ["{{base_url}}"],
+                  "path": ["planning", "spaces"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"6\",\n    \"name\": \"Reception\",\n    \"floor_Id\": \"2\",\n    \"area\": 50.5\n  },\n  {\n    \"id\": \"7\",\n    \"name\": \"Office A\",\n    \"floor_Id\": \"3\",\n    \"area\": 25.0\n  },\n  {\n    \"id\": \"8\",\n    \"name\": \"Office B\",\n    \"floor_Id\": \"3\",\n    \"area\": 30.0\n  }\n]"
+            }
+          ]
+        }
+      ],
+      "description": "Spaces API endpoints for managing room spaces"
+    }
+  ]
+}
