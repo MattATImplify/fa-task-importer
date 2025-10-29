@@ -846,7 +846,7 @@ def save_import_payload(job_data, payload, status, error_message=None):
         st.error(f"Error saving payload: {str(e)}")
         return None
 
-def validate_job_row(job, sites, floors, spaces, users, debug_mode=False):
+def validate_job_row(job, sites, floors, spaces, users, debug_mode=False, forms=None):
     """Validate a single job row and return list of errors"""
     errors = []
     
@@ -940,6 +940,20 @@ def validate_job_row(job, sites, floors, spaces, users, debug_mode=False):
             if not user_found:
                 errors.append(f"User '{assigned_email}' not found in reference data")
     
+    # Check if form_name is provided and exists in reference data (optional field)
+    form_name = job.get('form_name', '')
+    if form_name and not pd.isna(form_name) and str(form_name).strip():
+        form_name = str(form_name).strip()
+        if form_name and forms:
+            form_found = False
+            for form in forms:
+                form_ref_name = form.get('name', '')
+                if form_ref_name and str(form_ref_name).strip().lower() == form_name.lower():
+                    form_found = True
+                    break
+            if not form_found:
+                errors.append(f"Form '{form_name}' not found in reference data")
+    
     return errors
 
 def render_step_3(debug_mode):
@@ -1013,7 +1027,8 @@ def render_step_3(debug_mode):
                 'recurrence_type': row.get('recurrence_type', 'none'),
                 'recurrence_days': row.get('recurrence_days', ''),
                 'recurrence_months': row.get('recurrence_months', ''),
-                'recurrence_interval': row.get('recurrence_interval', '')
+                'recurrence_interval': row.get('recurrence_interval', ''),
+                'form_name': str(row.get('form_name', '')).strip() if pd.notna(row.get('form_name', '')) else ''  # Add form_name from CSV, handle NaN
             }
             # Clean up labels (remove empty strings and whitespace)
             if isinstance(job.get('labels'), list):
@@ -1034,6 +1049,7 @@ def render_step_3(debug_mode):
     floors = st.session_state.get('floors', [])
     spaces = st.session_state.get('spaces', [])
     users = st.session_state.get('users', [])
+    forms = st.session_state.get('forms', [])
     
     # Debug: Show user data structure
     if debug_mode and users:
@@ -1046,7 +1062,7 @@ def render_step_3(debug_mode):
     invalid_count = 0
     
     for idx, job in enumerate(st.session_state.edited_jobs):
-        errors = validate_job_row(job, sites, floors, spaces, users, debug_mode)
+        errors = validate_job_row(job, sites, floors, spaces, users, debug_mode, forms)
         st.session_state.edited_jobs[idx]['_validation_errors'] = errors
         if errors:
             invalid_count += 1
@@ -1456,6 +1472,38 @@ def render_step_3(debug_mode):
                         key=f"rec_end_{idx}"
                     )
                     st.session_state.edited_jobs[idx]['recurrence_end_date'] = selected_end_date.strftime('%Y-%m-%d')
+                
+                # Form selection dropdown
+                form_names = [form.get('name', '') for form in st.session_state.get('forms', []) if form.get('name')]
+                
+                if form_names:
+                    current_form = job.get('form_name', '')
+                    form_options = ["(Not assigned)"] + form_names
+                    
+                    # Determine default index
+                    if not current_form or current_form == '':
+                        default_form_index = 0  # "(Not assigned)"
+                    elif current_form in form_names:
+                        default_form_index = form_options.index(current_form)
+                    else:
+                        # Current form not in list, add it
+                        form_options.insert(1, current_form)
+                        default_form_index = 1
+                    
+                    selected_form = st.selectbox(
+                        "Form (Optional)",
+                        options=form_options,
+                        index=default_form_index,
+                        key=f"form_{idx}"
+                    )
+                    
+                    # Convert "(Not assigned)" back to empty string
+                    if selected_form == "(Not assigned)":
+                        selected_form = ''
+                    
+                    st.session_state.edited_jobs[idx]['form_name'] = selected_form
+                else:
+                    st.info("No forms available")
             
             # Validate & Save button and Delete job button
             col_btn1, col_btn2 = st.columns(2)
@@ -1466,7 +1514,7 @@ def render_step_3(debug_mode):
                     st.session_state.edited_jobs[idx]['assigned_to'] = st.session_state.get(f"temp_user_{idx}", '')
                     
                     # Re-validate this specific job
-                    job_errors = validate_job_row(st.session_state.edited_jobs[idx], sites, floors, spaces, users, debug_mode)
+                    job_errors = validate_job_row(st.session_state.edited_jobs[idx], sites, floors, spaces, users, debug_mode, forms)
                     
                     if not job_errors:
                         st.success(f"✅ Job {idx+1} validated successfully!")
@@ -1685,6 +1733,13 @@ def render_step_4(enable_import, debug_mode):
 
 def main():
     """Main application function"""
+    # Set page config
+    st.set_page_config(
+        page_title="FacilityApps Job Importer",
+        page_icon=None,  # Remove favicon
+        layout="wide"
+    )
+    
     # Apply custom theme
     apply_custom_theme()
     
@@ -1921,15 +1976,10 @@ def main():
     # ===== SIDEBAR (Minimal) =====
     with st.sidebar:
         # Header with branding
+        st.image("FA logo.jpg", use_container_width=True)
         st.markdown("""
-        <div style='padding: 1rem 0 1.5rem 0; text-align: center;'>
-            <div style='display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1rem;'>
-                <div style='width: 40px; height: 40px; background: #030213; border-radius: 8px; display: flex; align-items: center; justify-content: center;'>
-                    <span style='color: white; font-size: 18px;'>📊</span>
-                </div>
-            </div>
-            <div style='font-size: 16px; font-weight: 600; color: #030213;'>FacilityApps</div>
-            <div style='font-size: 12px; color: #717182;'>Bulk Job Importer</div>
+        <div style='padding: 0 0 1.5rem 0; text-align: center;'>
+            <div style='font-size: 14px; color: #717182; margin-top: 0.5rem;'>Bulk Job Importer</div>
         </div>
         """, unsafe_allow_html=True)
         
