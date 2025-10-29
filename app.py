@@ -247,7 +247,7 @@ class FacilityAppsClient:
             st.error(f"Error fetching form submission: {str(e)}")
             return None
 
-def build_job_payload(job, sites, floors, spaces, users):
+def build_job_payload(job, sites, floors, spaces, users, forms=None):
     """Build a proper API payload from job data"""
     
     # Helper function to get ID from name
@@ -282,6 +282,16 @@ def build_job_payload(job, sites, floors, spaces, users):
                 user.get('username', '').lower() == user_email.lower() or 
                 user.get('email', '').lower() == user_email.lower()):
                 return str(user.get('id'))
+        return None
+    
+    def get_form_id(form_name):
+        """Get form ID from form name"""
+        if not form_name or not forms:
+            return None
+        form_name = str(form_name).strip()
+        for form in forms:
+            if form.get('name', '').strip().lower() == form_name.lower():
+                return str(form.get('id'))
         return None
     
     # Get IDs from names
@@ -384,6 +394,25 @@ def build_job_payload(job, sites, floors, spaces, users):
                 "text": job.get('description_en')
             }
         ]
+    
+    # Add subtask if form is selected
+    if job.get('form_name'):
+        form_id = get_form_id(job.get('form_name'))
+        if form_id:
+            # Generate a unique ID for the subtask
+            subtask_id = f"new_{uuid.uuid4().hex}"
+            
+            # Add the subtask to the payload
+            payload["subtasks"] = [
+                {
+                    "id": subtask_id,
+                    "referrer": "forms",
+                    "referringId": form_id,
+                    "referring_id": form_id,
+                    "required": False,
+                    "order": 0
+                }
+            ]
     
     # Configure recurrence based on type
     if recurrence_type == 'none':
@@ -1582,6 +1611,7 @@ def render_step_4(enable_import, debug_mode):
             floors = st.session_state.get('floors', [])
             spaces = st.session_state.get('spaces', [])
             users = st.session_state.get('users', [])
+            forms = st.session_state.get('forms', [])
             
             import_results = []
             success_count = 0
@@ -1594,7 +1624,7 @@ def render_step_4(enable_import, debug_mode):
                 status_text.text(f"Importing job {idx+1} of {len(jobs)}: {job.get('title_en', 'Untitled')}...")
                 
                 # Build proper API payload
-                job_payload, build_error = build_job_payload(job, sites, floors, spaces, users)
+                job_payload, build_error = build_job_payload(job, sites, floors, spaces, users, forms)
                 
                 # Save payload regardless of success/failure
                 if job_payload:
@@ -1788,35 +1818,57 @@ def main():
         if "current_step" not in st.session_state:
             st.session_state.current_step = 1
         
-        # Step progress indicator
-        st.markdown("""
+        # Step progress indicator with dynamic highlighting
+        current = st.session_state.current_step
+        
+        step1_bg = "#030213" if current == 1 else "#e5e5e5"
+        step1_color = "white" if current == 1 else "#717182"
+        step1_title_color = "#030213" if current == 1 else "#717182"
+        step1_font_weight = "600" if current == 1 else "500"
+        
+        step2_bg = "#030213" if current == 2 else "#e5e5e5"
+        step2_color = "white" if current == 2 else "#717182"
+        step2_title_color = "#030213" if current == 2 else "#717182"
+        step2_font_weight = "600" if current == 2 else "500"
+        
+        step3_bg = "#030213" if current == 3 else "#e5e5e5"
+        step3_color = "white" if current == 3 else "#717182"
+        step3_title_color = "#030213" if current == 3 else "#717182"
+        step3_font_weight = "600" if current == 3 else "500"
+        
+        step4_bg = "#030213" if current == 4 else "#e5e5e5"
+        step4_color = "white" if current == 4 else "#717182"
+        step4_title_color = "#030213" if current == 4 else "#717182"
+        step4_font_weight = "600" if current == 4 else "500"
+        
+        st.markdown(f"""
         <div style='margin-bottom: 2rem;'>
             <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;'>
                 <div style='display: flex; align-items: center; gap: 8px;'>
-                    <div style='width: 40px; height: 40px; background: #030213; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;'>1</div>
+                    <div style='width: 40px; height: 40px; background: {step1_bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {step1_color}; font-weight: 600;'>1</div>
                     <div>
-                        <div style='font-weight: 600; color: #030213;'>Load Reference Data</div>
+                        <div style='font-weight: {step1_font_weight}; color: {step1_title_color};'>Load Reference Data</div>
                         <div style='font-size: 12px; color: #717182;'>Connect to API</div>
                     </div>
                 </div>
                 <div style='display: flex; align-items: center; gap: 8px;'>
-                    <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>2</div>
+                    <div style='width: 40px; height: 40px; background: {step2_bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {step2_color}; font-weight: 600;'>2</div>
                     <div>
-                        <div style='font-weight: 500; color: #717182;'>Upload & Validate</div>
+                        <div style='font-weight: {step2_font_weight}; color: {step2_title_color};'>Upload & Validate</div>
                         <div style='font-size: 12px; color: #717182;'>Import CSV file</div>
                     </div>
                 </div>
                 <div style='display: flex; align-items: center; gap: 8px;'>
-                    <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>3</div>
+                    <div style='width: 40px; height: 40px; background: {step3_bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {step3_color}; font-weight: 600;'>3</div>
                     <div>
-                        <div style='font-weight: 500; color: #717182;'>Review & Edit</div>
+                        <div style='font-weight: {step3_font_weight}; color: {step3_title_color};'>Review & Edit</div>
                         <div style='font-size: 12px; color: #717182;'>Configure jobs</div>
                     </div>
                 </div>
                 <div style='display: flex; align-items: center; gap: 8px;'>
-                    <div style='width: 40px; height: 40px; background: #e5e5e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #717182; font-weight: 600;'>4</div>
+                    <div style='width: 40px; height: 40px; background: {step4_bg}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {step4_color}; font-weight: 600;'>4</div>
                     <div>
-                        <div style='font-weight: 500; color: #717182;'>Import Jobs</div>
+                        <div style='font-weight: {step4_font_weight}; color: {step4_title_color};'>Import Jobs</div>
                         <div style='font-size: 12px; color: #717182;'>Execute import</div>
                     </div>
                 </div>
@@ -1959,8 +2011,8 @@ def main():
         st.markdown("## 📊 Reference Data")
         
         if st.session_state.lookups_loaded:
-            # Card-based metrics
-            col1, col2, col3, col4 = st.columns(4)
+            # Card-based metrics including forms
+            col1, col2, col3, col4, col5 = st.columns(5)
             
             with col1:
                 st.metric("Sites", st.session_state.get("sites_count", 0))
@@ -1970,6 +2022,123 @@ def main():
                 st.metric("Spaces", st.session_state.get("spaces_count", 0))
             with col4:
                 st.metric("Users", st.session_state.get("users_count", 0))
+            with col5:
+                st.metric("Forms", len(st.session_state.get("forms", [])))
+            
+            st.markdown("---")
+            
+            # Sites, Floors, and Spaces in one section
+            st.markdown("### Sites, Floors & Spaces")
+            
+            if st.session_state.get('sites'):
+                # Create a combined dataframe for sites, floors, and spaces
+                sites_df = pd.DataFrame(st.session_state.sites)
+                floors_df = pd.DataFrame(st.session_state.floors)
+                spaces_df = pd.DataFrame(st.session_state.spaces)
+                
+                # Combine all into one dataframe
+                combined_data = []
+                
+                # Add sites
+                for site in st.session_state.sites:
+                    combined_data.append({
+                        'ID': site.get('id', ''),
+                        'Name': site.get('name', ''),
+                        'Type': 'Site'
+                    })
+                
+                # Add floors
+                for floor in st.session_state.floors:
+                    combined_data.append({
+                        'ID': floor.get('id', ''),
+                        'Name': floor.get('name', ''),
+                        'Type': 'Floor'
+                    })
+                
+                # Add spaces
+                for space in st.session_state.spaces:
+                    combined_data.append({
+                        'ID': space.get('id', ''),
+                        'Name': space.get('name', ''),
+                        'Type': 'Space'
+                    })
+                
+                combined_df = pd.DataFrame(combined_data)
+                
+                if not combined_df.empty:
+                    st.dataframe(combined_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No sites, floors, or spaces found")
+            
+            st.markdown("---")
+            
+            # Users in separate section
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.markdown("### Users")
+            with col2:
+                st.markdown("### &nbsp;")  # Spacing
+                if st.session_state.get('users'):
+                    csv = pd.DataFrame(st.session_state.users).to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download CSV",
+                        data=csv,
+                        file_name="users.csv",
+                        mime="text/csv",
+                        key="download_users"
+                    )
+            
+            if st.session_state.get('users'):
+                users_df = pd.DataFrame(st.session_state.users)
+                if not users_df.empty:
+                    # Show user name and email if available
+                    display_cols = []
+                    if 'user_name' in users_df.columns:
+                        display_cols.append('user_name')
+                    if 'email' in users_df.columns:
+                        display_cols.append('email')
+                    if 'name' in users_df.columns and 'name' not in display_cols:
+                        display_cols.append('name')
+                    if display_cols:
+                        st.dataframe(users_df[display_cols], use_container_width=True, hide_index=True)
+                    else:
+                        st.dataframe(users_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No users found")
+            
+            st.markdown("---")
+            
+            # Forms in separate section
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.markdown("### Forms")
+            with col2:
+                st.markdown("### &nbsp;")  # Spacing
+                if st.session_state.get('forms'):
+                    csv = pd.DataFrame(st.session_state.forms).to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download CSV",
+                        data=csv,
+                        file_name="forms.csv",
+                        mime="text/csv",
+                        key="download_forms"
+                    )
+            
+            if st.session_state.get('forms'):
+                forms_df = pd.DataFrame(st.session_state.forms)
+                if not forms_df.empty:
+                    # Show form name and type if available
+                    display_cols = []
+                    if 'name' in forms_df.columns:
+                        display_cols.append('name')
+                    if 'type' in forms_df.columns:
+                        display_cols.append('type')
+                    if display_cols:
+                        st.dataframe(forms_df[display_cols], use_container_width=True, hide_index=True)
+                    else:
+                        st.dataframe(forms_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No forms found")
         else:
             st.info("No reference data loaded yet. Configure your API settings and load data from the Dashboard.")
     
