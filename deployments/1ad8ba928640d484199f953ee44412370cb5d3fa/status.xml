@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>1ad8ba928640d484199f953ee44412370cb5d3fa</id>
+  <author>Matthew smith</author>
+  <deployer>GitHub</deployer>
+  <authorEmail>matthewsmith@Matthews-MacBook-Air-2.local</authorEmail>
+  <message>Add Azure deployment configuration files and GitHub Actions workflow</message>
+  <progress></progress>
+  <status>Success</status>
+  <statusText></statusText>
+  <lastSuccessEndTime>2025-10-26T09:06:02.1227438Z</lastSuccessEndTime>
+  <receivedTime>2025-10-26T08:59:55.8291498Z</receivedTime>
+  <startTime>2025-10-26T08:59:57.4147678Z</startTime>
+  <endTime>2025-10-26T09:06:02.1227438Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>False</is_readonly>
+  <buildSummary />
+</deployment>

@@ -1,0 +1,4 @@
+<step title="Incoming Request" date="2025-10-26T08:37:59.334" instance="b69d9c" url="/api/settings/branch" method="GET" type="request" pid="772,1,5" Host="fa-job-importer.scm.azurewebsites.net" User-Agent="Azure-WebSites-Controller/105.0.7.92" Authorization="Bas..." x-ms-request-id="d0831bdb-0c5b-464f-87b3-ac55e59a4b22" X-ARR-LOG-ID="d0831bdb-0c5b-464f-87b3-ac55e59a4b22" CLIENT-IP="20.105.224.24:4930" X-SITE-DEPLOYMENT-ID="fa-job-importer" WAS-DEFAULT-HOSTNAME="fa-job-importer.scm.azurewebsites.net" X-MS-PLATFORM-INTERNAL="True" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/settings/branch" X-Client-IP="20.105.224.24" X-Client-Port="4930" >
+  <step title="Cleanup Xml Logs" date="2025-10-26T08:37:59.345" /><!-- duration: 27ms -->
+  <step title="Outgoing response" date="2025-10-26T08:37:59.402" type="response" statusCode="200" statusText="OK" /><!-- duration: 20ms -->
+</step><!-- duration: 104ms -->

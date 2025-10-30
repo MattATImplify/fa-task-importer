@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>temp-a8a97c87</id>
+  <author>N/A</author>
+  <deployer>GitHub</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>Fetch from https://github.com/MattATImplify/fa-task-importer</message>
+  <progress>Fetching changes.</progress>
+  <status>Pending</status>
+  <statusText>Receiving changes.</statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2025-10-26T09:24:24.1305527Z</receivedTime>
+  <startTime>2025-10-26T09:24:24.1305527Z</startTime>
+  <endTime />
+  <complete>False</complete>
+  <is_temp>True</is_temp>
+  <is_readonly>False</is_readonly>
+  <buildSummary />
+</deployment>

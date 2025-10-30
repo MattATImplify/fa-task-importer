@@ -318,6 +318,12 @@ def build_job_payload(job, sites, floors, spaces, users, forms=None):
     
     # Parse recurrence settings
     recurrence_type = job.get('recurrence_type', 'none')
+    # Handle empty or whitespace-only recurrence_type
+    if not recurrence_type or str(recurrence_type).strip() == '' or pd.isna(recurrence_type):
+        recurrence_type = 'none'
+    else:
+        recurrence_type = str(recurrence_type).strip()
+    
     date_start = job.get('date_start', '')
     date_end = str(job.get('recurrence_end_date', date_start)).strip()
     if date_end == 'nan' or date_end == 'None' or date_end == '':
@@ -363,7 +369,7 @@ def build_job_payload(job, sites, floors, spaces, users, forms=None):
         "frequency_monthly_repeat": [],
         "frequency_stop_repeat": 0,
         "frequency_stop_repeat_number_value": None,
-        "repeat_interval_period": "daily",
+        "repeat_interval_period": None,  # Will be set based on recurrence_type
         "task_sampling_select": None,
         "subtask_sampling_select": None,
         "exception-mode": 0,
@@ -415,13 +421,13 @@ def build_job_payload(job, sites, floors, spaces, users, forms=None):
             ]
     
     # Configure recurrence based on type
-    if recurrence_type == 'none':
+    if recurrence_type == 'none' or recurrence_type == '':
         # One-off job
         payload["sequence_date"] = None
         payload["date_end"] = date_start
         payload["task_complete_emails"] = True
         payload["task_canceled_emails"] = True
-        payload["repeat_interval_period"] = "daily"
+        # Don't set repeat_interval_period for one-off jobs - leave it as set in base payload
         
     elif recurrence_type == 'daily':
         # Daily recurrence
@@ -618,7 +624,14 @@ def credentials_entered():
         master_username = os.getenv("MASTER_USERNAME", "")
         master_password = os.getenv("MASTER_PASSWORD", "")
         
-        # Fallback to Streamlit secrets (local development)
+        # Fallback to .env file (local development)
+        if not master_username or not master_password:
+            from dotenv import load_dotenv
+            load_dotenv()
+            master_username = os.getenv("MASTER_USERNAME", "")
+            master_password = os.getenv("MASTER_PASSWORD", "")
+        
+        # Final fallback to Streamlit secrets
         if not master_username or not master_password:
             master_username = st.secrets["auth"]["master_username"]
             master_password = st.secrets["auth"]["master_password"]
@@ -630,7 +643,7 @@ def credentials_entered():
         else:
             st.session_state.password_correct = False
     except KeyError:
-        st.error("Authentication not configured. Please check environment variables or secrets.toml")
+        st.error("Authentication not configured. Please check environment variables or .env file")
         st.session_state.password_correct = False
 
 def load_reference_data(client, debug_mode):
@@ -1036,6 +1049,8 @@ def render_step_3(debug_mode):
     
     # Convert dataframe to list of dictionaries for easier editing
     if 'edited_jobs' not in st.session_state:
+        # Clear any existing validation cache when loading new CSV
+        st.session_state.jobs_validated = {}
         # Preprocess the CSV data to map field names correctly
         jobs = []
         for _, row in df.iterrows():
@@ -1086,17 +1101,30 @@ def render_step_3(debug_mode):
         st.write(f"🔍 DEBUG: First user structure: {users[0]}")
         st.write(f"🔍 DEBUG: User keys: {users[0].keys() if isinstance(users[0], dict) else 'Not a dict'}")
     
-    # Validate all jobs
+    # Validate all jobs (only if not already validated or if this is a fresh load)
+    if 'jobs_validated' not in st.session_state:
+        st.session_state.jobs_validated = {}
+    
     valid_count = 0
     invalid_count = 0
     
     for idx, job in enumerate(st.session_state.edited_jobs):
-        errors = validate_job_row(job, sites, floors, spaces, users, debug_mode, forms)
-        st.session_state.edited_jobs[idx]['_validation_errors'] = errors
+        # Only re-validate if this job hasn't been validated before or if we're forcing validation
+        if idx not in st.session_state.jobs_validated or st.session_state.get('force_validate', False):
+            errors = validate_job_row(job, sites, floors, spaces, users, debug_mode, forms)
+            st.session_state.edited_jobs[idx]['_validation_errors'] = errors
+            st.session_state.jobs_validated[idx] = True
+        else:
+            errors = st.session_state.edited_jobs[idx].get('_validation_errors', [])
+        
         if errors:
             invalid_count += 1
         else:
             valid_count += 1
+    
+    # Reset force validation flag
+    if 'force_validate' in st.session_state:
+        st.session_state.force_validate = False
     
     # Show summary metrics
     col1, col2, col3 = st.columns(3)
@@ -1544,13 +1572,18 @@ def render_step_3(debug_mode):
                     
                     # Re-validate this specific job
                     job_errors = validate_job_row(st.session_state.edited_jobs[idx], sites, floors, spaces, users, debug_mode, forms)
+                    st.session_state.edited_jobs[idx]['_validation_errors'] = job_errors
                     
+                    # Just show success/error and force a minimal rerun to update counts
                     if not job_errors:
-                        st.success(f"✅ Job {idx+1} validated successfully!")
+                        st.success(f"✅ Job {idx+1} validated successfully!", key=f"success_{idx}")
                     else:
-                        st.error(f"❌ Job {idx+1} still has errors:")
+                        st.error(f"❌ Job {idx+1} has errors:", key=f"error_{idx}")
                         for error in job_errors:
                             st.write(f"• {error}")
+                    
+                    # Force re-calculation of counts
+                    st.session_state.force_validate = True
                     st.rerun()
             
             with col_btn2:
@@ -1765,9 +1798,10 @@ def main():
     """Main application function"""
     # Set page config
     st.set_page_config(
-        page_title="FacilityApps Job Importer",
+        page_title="FacilityApps",
         page_icon=None,  # Remove favicon
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="collapsed"
     )
     
     # Apply custom theme
@@ -1927,39 +1961,44 @@ def main():
             if 'config_fa_token' not in st.session_state:
                 st.session_state.config_fa_token = default_token
             
+            # Display configuration from environment variables (read-only)
+            st.info("🔒 Configuration is managed via environment variables and cannot be changed here.")
+            
             fa_domain = st.text_input(
                 "FA Domain",
-                value=st.session_state.config_fa_domain,
+                value=default_domain,
                 placeholder="example.facilityapps.com",
-                help="Your FacilityApps domain (e.g., demo.facilityapps.com)",
-                key="settings_domain"
+                help="Configured via environment variable FA_DOMAIN",
+                key="settings_domain",
+                disabled=True
             )
             
             fa_token = st.text_input(
                 "API Token",
-                value=st.session_state.config_fa_token,
-                type="password",
-                placeholder="Enter API token",
-                help="Your FacilityApps API token",
-                key="settings_token"
+                value="••••••••••••••••" if default_token else "",
+                placeholder="Configured via environment variable FA_TOKEN",
+                help="Configured via environment variable FA_TOKEN (hidden for security)",
+                key="settings_token",
+                disabled=True
             )
             
-            # Update session state when values change
-            st.session_state.config_fa_domain = fa_domain
-            st.session_state.config_fa_token = fa_token
+            # Show customer ID if available
+            customer_id = os.getenv("CUSTOMER_ID", "Not configured")
+            st.info(f"**Customer ID:** {customer_id}")
+            
+            # Use environment variables for the actual connection
+            st.session_state.config_fa_domain = default_domain
+            st.session_state.config_fa_token = default_token
             
             if st.button("🔗 Test Connection", use_container_width=True):
-                if not fa_domain or not fa_token:
-                    st.error("Please provide both domain and token")
+                if not default_domain or not default_token:
+                    st.error("FA_DOMAIN and FA_TOKEN environment variables not configured")
                 else:
                     with st.spinner("Testing connection..."):
-                        client = FacilityAppsClient(fa_domain, fa_token)
+                        client = FacilityAppsClient(default_domain, default_token)
                         success, message = client.test_connection()
                         if success:
                             st.success(message)
-                            # Store the working credentials in session state
-                            st.session_state.config_fa_domain = fa_domain
-                            st.session_state.config_fa_token = fa_token
                         else:
                             st.error(message)
         
@@ -2141,6 +2180,8 @@ def main():
                     st.info("No forms found")
         else:
             st.info("No reference data loaded yet. Configure your API settings and load data from the Dashboard.")
+    
+
     
     # ===== SIDEBAR (Minimal) =====
     with st.sidebar:

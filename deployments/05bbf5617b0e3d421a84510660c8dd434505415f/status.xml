@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>05bbf5617b0e3d421a84510660c8dd434505415f</id>
+  <author>Matthew smith</author>
+  <deployer>GitHub</deployer>
+  <authorEmail>matthewsmith@Matthews-MacBook-Air-2.local</authorEmail>
+  <message>Fix Streamlit secrets error in Azure deployment - handle missing secrets gracefully</message>
+  <progress>Updating submodules.</progress>
+  <status>Pending</status>
+  <statusText></statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2025-10-26T09:24:32.163836Z</receivedTime>
+  <startTime>2025-10-26T09:24:32.163836Z</startTime>
+  <endTime />
+  <complete>False</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>False</is_readonly>
+  <buildSummary />
+</deployment>

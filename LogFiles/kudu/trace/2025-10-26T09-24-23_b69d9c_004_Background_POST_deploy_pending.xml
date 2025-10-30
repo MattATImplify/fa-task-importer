@@ -1,0 +1,14 @@
+<step title="BackgroundTrace" date="2025-10-26T09:24:23.709" instance="b69d9c" url="/deploy" method="POST" >
+  <step title="Creating temporary deployment - FetchDeploymentManager" date="2025-10-26T09:24:24.087" /><!-- duration: 5ms -->
+  <step title="Creating temporary deployment" date="2025-10-26T09:24:24.103" /><!-- duration: 347ms -->
+  <step title="Performing fetch based deployment" date="2025-10-26T09:24:24.649" >
+    <step title="Deployment timer started" date="2025-10-26T09:24:31.911" >
+      <step title="DeploymentManager.Deploy(id:05bbf5617b0e3d421a84510660c8dd434505415f)" date="2025-10-26T09:24:31.942" >
+        <step title="Collecting changeset information" date="2025-10-26T09:24:32.043" /><!-- duration: 281ms -->
+        <step title="Updating submodules" date="2025-10-26T09:24:32.356" /><!-- duration: 1264ms -->
+        <step title="Determining deployment builder" date="2025-10-26T09:24:34.242" >
+          <step title="Builder is OryxBuilder" date="2025-10-26T09:24:34.283" /><!-- duration: 21ms -->
+        </step><!-- duration: 93ms -->
+        <step title="PreDeployment: context.CleanOutputPath False" date="2025-10-26T09:24:34.487" >
+          <step title="PreDeployment: context.OutputPath /home/site/wwwroot" date="2025-10-26T09:24:34.885" >
+            <step title="Building" date="2025-10-26T09:24:35.396" 
