@@ -633,8 +633,18 @@ def credentials_entered():
         
         # Final fallback to Streamlit secrets
         if not master_username or not master_password:
-            master_username = st.secrets["auth"]["master_username"]
-            master_password = st.secrets["auth"]["master_password"]
+            try:
+                master_username = st.secrets["auth"]["master_username"]
+                master_password = st.secrets["auth"]["master_password"]
+            except:
+                pass
+        
+        # Debug: Log what we're comparing (don't log actual password)
+        if st.session_state.get('debug_mode', False):
+            st.write(f"Debug: Expected username: '{master_username}'")
+            st.write(f"Debug: Got username: '{st.session_state.get('username', '')}'")
+            st.write(f"Debug: Username match: {st.session_state.get('username', '') == master_username}")
+            st.write(f"Debug: Password match: {st.session_state.get('password', '') == master_password}")
         
         if (st.session_state["username"] == master_username and 
             st.session_state["password"] == master_password):
