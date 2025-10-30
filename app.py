@@ -640,11 +640,13 @@ def credentials_entered():
                 pass
         
         # Debug: Log what we're comparing (don't log actual password)
-        if st.session_state.get('debug_mode', False):
-            st.write(f"Debug: Expected username: '{master_username}'")
-            st.write(f"Debug: Got username: '{st.session_state.get('username', '')}'")
-            st.write(f"Debug: Username match: {st.session_state.get('username', '') == master_username}")
-            st.write(f"Debug: Password match: {st.session_state.get('password', '') == master_password}")
+        # Always show debug info for now to help troubleshoot
+        st.write(f"🔍 Debug: Expected username: '{master_username}'")
+        st.write(f"🔍 Debug: Got username: '{st.session_state.get('username', '')}'")
+        st.write(f"🔍 Debug: Username set: {bool(master_username)}")
+        st.write(f"🔍 Debug: Password set: {bool(master_password)}")
+        st.write(f"🔍 Debug: Username match: {st.session_state.get('username', '') == master_username}")
+        st.write(f"🔍 Debug: Password match: {st.session_state.get('password', '') == master_password}")
         
         if (st.session_state["username"] == master_username and 
             st.session_state["password"] == master_password):
