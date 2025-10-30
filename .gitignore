@@ -56,4 +56,4 @@ runs/
 
 # Temporary files
 *.tmp
-*.temp
+*.tempazure-credentials.json
