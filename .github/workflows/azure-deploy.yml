@@ -27,11 +27,14 @@ jobs:
         source venv/bin/activate
         pip install -r requirements.txt
     
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'fa-job-importer'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+        app-name: 'regularcleaningFAadmin'
         package: .
