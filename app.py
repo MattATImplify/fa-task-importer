@@ -334,7 +334,7 @@ def build_job_payload(job, sites, floors, spaces, users, forms=None):
         "id": None,
         "sequence_date": None,
         "editMode": "all",
-        "mode": "roster",
+        "mode": "all",
         "translations": [],
         "description_translations": [],
         "date_start": date_start,
@@ -1576,9 +1576,9 @@ def render_step_3(debug_mode):
                     
                     # Just show success/error and force a minimal rerun to update counts
                     if not job_errors:
-                        st.success(f"✅ Job {idx+1} validated successfully!", key=f"success_{idx}")
+                        st.success(f"✅ Job {idx+1} validated successfully!")
                     else:
-                        st.error(f"❌ Job {idx+1} has errors:", key=f"error_{idx}")
+                        st.error(f"❌ Job {idx+1} has errors:")
                         for error in job_errors:
                             st.write(f"• {error}")
                     
